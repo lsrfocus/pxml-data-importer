@@ -1,5 +1,16 @@
 import pxml
 import glob
+import json
+
+# https://stackoverflow.com/a/8230505/763231
+class SetEncoder(json.JSONEncoder):
+    def default(self, obj):
+       if isinstance(obj, set):
+           return list(obj)
+       return json.JSONEncoder.default(self, obj)
+
+def prettyDump(obj):
+    print json.dumps(obj, sort_keys=True, indent=4, cls=SetEncoder)
 
 # Documentation for PXML can be found at - https://docs.palantir.com/gotham/all/index.html#../Subsystems/gotham/Content/xml/pXMLFormatOverview.htm
 # No matter how complicated the XML looks, it will always have this structure:
@@ -8,7 +19,6 @@ import glob
 #       dataSourceSet
 #       objectSet
 #       linkSet
-
 def parse(xmlFile):
     print "Processing %s" % xmlFile
 
@@ -84,10 +94,10 @@ for xml in glob.glob('./baseRealmDump/9/9/9/*.xml'):
     parse(xml)
 
 print "\nObject types:"
-print objectTypes
+prettyDump(objectTypes)
 
-print "\nObject types with media:"
-print objectTypesWithMedia
+print "\nObject types containing media:"
+prettyDump(objectTypesWithMedia)
 
 print "\nLinks:"
-print linkNames
+prettyDump(linkNames)
