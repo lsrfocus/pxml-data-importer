@@ -64,4 +64,4 @@ def parse(xmlFile):
 # this will give us a list of all xml files in the data directory
 for xml in glob.glob('./baseRealmDump/*/*/*/*.xml'):
     parse(xml)
-    break
+    # break
