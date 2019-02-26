@@ -19,8 +19,8 @@ def prettyDump(obj):
 #       dataSourceSet
 #       objectSet
 #       linkSet
-def parse(xmlFile):
-    print "Processing %s" % xmlFile
+def parse(xmlFile, index, totalFiles):
+    print "Processing %s / %s (%s)..." % (index, totalFiles, xmlFile)
 
     root = pxml.parse(xmlFile, True)
 
@@ -90,8 +90,13 @@ objectTypesWithMedia = set()
 linkNames = set()
 
 # this will give us a list of all xml files in the data directory
-for xml in glob.glob('./baseRealmDump/9/9/9/*.xml'):
-    parse(xml)
+files = glob.glob('./baseRealmDump/9/9/9/*.xml')
+totalFiles = len(files)
+index = 1
+
+for xml in files:
+    parse(xml, index, totalFiles)
+    index += 1
 
 print "\nObject types (with properties):"
 prettyDump(objectTypes)
