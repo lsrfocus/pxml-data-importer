@@ -24,7 +24,7 @@ def parse(xmlFile):
     #     print
 
     # get the objects, properties and media (saved as a separate file)
-    print "Objects:"
+    # print "Objects:"
 
     # index all objects by their ID for working with links if we want to
     # later on
@@ -32,23 +32,32 @@ def parse(xmlFile):
 
     if root.graph.objectSet is not None:
         for object in root.graph.objectSet.object:
-            print "\t%s" % object.type_
+            objectType = object.type_
+            # print "\t%s" % objectType
+
+            if objectType not in objectTypes:
+                objectTypes[objectType] = set()
 
             if object.propertySet is not None:
-                print "\tProperties:"
+                # print "\tProperties..."
                 for property in object.propertySet.property:
-                    print "\t\t%s: %s" % (property.type_, property.propertyValue.propertyData)
+                    propertyType = property.type_
+                    # print "\t\t%s: %s" % (property.type_, property.propertyValue.propertyData)
+
+                    objectTypes[objectType].add(propertyType)
 
             # Create a media/ folder in the same directory as this script if you want to capture attachments
             if object.mediaSet is not None:
-                for media in object.mediaSet.media:
-                    title = media.id
-                    # Could use media.mediaTitle, but that hits encoding issues with Arabic
-                    data = media.mediaData
+                objectTypesWithMedia.add(objectType)
 
-                    mediaFile = open('media/' + title, 'wb')
-                    mediaFile.write(data)
-                    mediaFile.close()
+                # for media in object.mediaSet.media:
+                #     title = media.id
+                #     # Could use media.mediaTitle, but that hits encoding issues with Arabic
+                #     data = media.mediaData
+
+                #     mediaFile = open('media/' + title, 'wb')
+                #     mediaFile.write(data)
+                #     mediaFile.close()
 
             # this will just be an easy way to reference a linked object later if we want to
             objects[object.id] = object
@@ -56,12 +65,29 @@ def parse(xmlFile):
     if root.graph.linkSet is not None:
         for link in root.graph.linkSet.link:
             # look up the object by this ID in the objects hash for more information about the object itself
-            print "%s is the parent of %s" % (link.parentRef, link.childRef)
+            # print "%s is the parent of %s" % (link.parentRef, link.childRef)
+
+            parentType = objects[link.parentRef].type_ if objects[link.parentRef] is not None else None
+            childType = objects[link.childRef].type_ if objects[link.childRef] is not None else None
+            linkName = str(parentType) + " --> " + str(childType)
+            linkNames.add(linkName)
 
 ####################################################################################################
-# This is the main entry point of the program; run this as python example.py
+
+# Metadata for the schema.
+objectTypes = {}
+objectTypesWithMedia = set()
+linkNames = set()
 
 # this will give us a list of all xml files in the data directory
-for xml in glob.glob('./baseRealmDump/9/9/9/6178876863978415320_30ca2999.xml'):
+for xml in glob.glob('./baseRealmDump/9/9/9/*.xml'):
     parse(xml)
-    # break
+
+print "\nObject types:"
+print objectTypes
+
+print "\nObject types with media:"
+print objectTypesWithMedia
+
+print "\nLinks:"
+print linkNames
