@@ -22,7 +22,11 @@ def prettyDump(obj):
 def parse(xmlFile, index, totalFiles):
     print "Processing %s / %s (%s)..." % (index, totalFiles, xmlFile)
 
-    root = pxml.parse(xmlFile, True)
+    try:
+        root = pxml.parse(xmlFile, True)
+    except UnicodeEncodeError:
+        failures.append(xmlFile)
+        return
 
     # get the data sources
     # print "Data Sources:"
@@ -84,6 +88,9 @@ def parse(xmlFile, index, totalFiles):
 
 ####################################################################################################
 
+# Parsing metadata.
+failures = []
+
 # Metadata for the schema.
 objectTypes = {}
 objectTypesWithMedia = set()
@@ -109,3 +116,6 @@ prettyDump(objectTypesWithMedia)
 
 print "\nLinks:"
 prettyDump(linkNames)
+
+print "\nFailures (probably contain non-ASCII for dataSource names):"
+prettyDump(failures)
