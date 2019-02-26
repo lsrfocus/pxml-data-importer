@@ -1,0 +1,548 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://www.palantirtech.com/pg/schema/import/"
+            xmlns:tns="http://www.palantirtech.com/pg/schema/import/"
+            elementFormDefault="qualified">
+    <xsd:attributeGroup name="databaseMetaData">
+        <xsd:attribute name="timeCreated" type="xsd:dateTime" />
+        <xsd:attribute name="lastModified" type="xsd:dateTime" />
+        <xsd:attribute name="createdBy" type="xsd:string" />
+    </xsd:attributeGroup>
+    <xsd:complexType name="stringPositionLocator">
+        <xsd:attribute name="startPosition" type="xsd:nonNegativeInteger" />
+        <xsd:attribute name="endPosition" type="xsd:nonNegativeInteger" />
+        <xsd:attribute name="sentenceNumber" type="xsd:nonNegativeInteger" />
+        <xsd:attribute name="paragraphNumber" type="xsd:nonNegativeInteger" />
+    </xsd:complexType>
+    <xsd:complexType name="dataSourceRecord">
+        <xsd:sequence>
+            <xsd:element name="stringPositionLocator" minOccurs="0" type="tns:stringPositionLocator" />
+        </xsd:sequence>
+        <xsd:attribute name="dataSource" type="xsd:IDREF" use="required" />
+        <xsd:attribute name="importKey" type="xsd:string" use="required" />
+        <xsd:attribute name="recordLocator" type="xsd:long" />
+        <xsd:attribute name="aclId" type="xsd:IDREF" />
+        <xsd:attributeGroup ref="tns:SecurityAttributes">
+            <xsd:annotation>
+                <xsd:documentation>
+                    The SecurityAttributes attribute group is no longer supported by Palantir.
+                    It remains solely for XML parsing backwards compatibility. Beyond that,
+                    attributes defined in the SecurityAttributes attribute group are ignored.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attributeGroup>
+    </xsd:complexType>
+    <xsd:complexType name="dataSourceRecordSet">
+        <xsd:sequence>
+            <xsd:element name="dataSourceRecord" maxOccurs="unbounded" type="tns:dataSourceRecord" />
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="property">
+        <xsd:sequence>
+            <xsd:element name="customKeyword" type="tns:customKeyword" minOccurs="0" />
+            <xsd:choice minOccurs="0">
+                <xsd:element name="timestamp" type="tns:timestamp" />
+                <xsd:element name="timeInterval" type="tns:timeInterval" />
+            </xsd:choice>
+            <xsd:element name="gisData" type="tns:gisData" minOccurs="0" />
+            <xsd:element name="propertyValue" type="tns:propertyValue" />
+            <xsd:element name="dataSourceRecordSet" type="tns:dataSourceRecordSet" minOccurs="0" />
+        </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:ID" />
+        <xsd:attribute name="type" type="tns:nonEmptyString" use="required" />
+        <xsd:attribute name="linkType" type="tns:nonEmptyString" />
+        <xsd:attribute name="role" type="tns:nonEmptyString" />
+        <xsd:attribute name="keywordDisabled" type="xsd:boolean" />
+        <xsd:attribute name="aclId" type="xsd:IDREF" />
+        <xsd:attributeGroup ref="tns:SecurityAttributes">
+            <xsd:annotation>
+                <xsd:documentation>
+                    The SecurityAttributes attribute group is no longer supported by Palantir.
+                    It remains solely for XML parsing backwards compatibility. Beyond that,
+                    attributes defined in the SecurityAttributes attribute group are ignored.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attributeGroup>
+    </xsd:complexType>
+    <xsd:simpleType name="propertyData">
+        <xsd:restriction base="xsd:string" />
+    </xsd:simpleType>
+    <xsd:complexType name="propertyComponent">
+        <xsd:sequence>
+            <xsd:element name="propertyData" type="tns:propertyData" />
+        </xsd:sequence>
+        <xsd:attribute name="type" type="tns:nonEmptyString" use="required" />
+    </xsd:complexType>
+    <xsd:complexType name="propertyValue">
+        <xsd:sequence>
+          <xsd:choice minOccurs="0">
+              <xsd:element name="propertyData" type="tns:propertyData" />
+              <xsd:element name="propertyComponent" maxOccurs="unbounded" type="tns:propertyComponent" />
+              <xsd:element name="propertyTimeInterval" type="tns:propertyTimeInterval" />
+              <xsd:element name='propertyUnparsedValue' type="tns:propertyUnparsedValue" />
+          </xsd:choice>
+          <xsd:element name="propertyRawValue" type="tns:propertyRawValue" minOccurs="0" />
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="propertySet">
+        <xsd:sequence>
+            <xsd:element name="property" type="tns:property" maxOccurs="unbounded" />
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="mediaSet">
+        <xsd:sequence>
+            <xsd:element name="media" type="tns:media" maxOccurs="unbounded" minOccurs="0" />
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:simpleType name="mediaData">
+        <xsd:restriction base="xsd:base64Binary" />
+    </xsd:simpleType>
+    <xsd:complexType name="media">
+        <xsd:sequence>
+            <xsd:element name="mediaTitle" minOccurs="0">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:string">
+                        <xsd:maxLength value="80" />
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="mediaShortDescription" minOccurs="0">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:string">
+                        <xsd:maxLength value="50" />
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="mediaDescription" minOccurs="0">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:string">
+                        <xsd:maxLength value="4000" />
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="mediaData" type="tns:mediaData" />
+            <xsd:element name="thumbnail" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="thumbnailData" type="xsd:base64Binary" />
+                    </xsd:sequence>
+                    <xsd:attribute name="mimeType" type="xsd:string" />
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="dataSourceRecordSet" type="tns:dataSourceRecordSet" minOccurs="0" />
+        </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:ID" />
+        <xsd:attribute name="mediaType" use="required" type="tns:nonEmptyString" />
+        <xsd:attribute name="linkType" type="tns:nonEmptyString" use="required" />
+        <xsd:attribute name="mimeType" type="tns:nonEmptyString" />
+        <xsd:attribute name="filename" type="xsd:string" />
+        <xsd:attribute name="aclId" type="xsd:IDREF" />
+        <xsd:attributeGroup ref="tns:SecurityAttributes">
+            <xsd:annotation>
+                <xsd:documentation>
+                    The SecurityAttributes attribute group is no longer supported by Palantir.
+                    It remains solely for XML parsing backwards compatibility. Beyond that,
+                    attributes defined in the SecurityAttributes attribute group are ignored.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attributeGroup>
+    </xsd:complexType>
+    <xsd:attributeGroup name="SecurityAttributes">
+        <xsd:annotation>
+            <xsd:documentation>
+                    The SecurityAttributes attribute group is no longer supported by Palantir.
+                    It remains solely for XML parsing backwards compatibility. Beyond that,
+                    attributes defined in the SecurityAttributes attribute group are ignored.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:attribute name="classification">
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:token">
+                    <xsd:enumeration value="U" />
+                    <xsd:enumeration value="C" />
+                    <xsd:enumeration value="S" />
+                    <xsd:enumeration value="TS" />
+                    <xsd:enumeration value="nonUS" />
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:attribute>
+        <xsd:attribute name="FGIsourceOpen" type="xsd:NMTOKENS" />
+        <xsd:attribute name="FGIsourceProtected" type="xsd:NMTOKENS" />
+        <xsd:attribute name="SCIcontrols" type="xsd:NMTOKENS" />
+        <xsd:attribute name="declassification" type="xsd:string" />
+        <xsd:attribute name="disseminationControls" type="xsd:NMTOKENS" />
+        <xsd:attribute name="nonICmarkings" type="xsd:NMTOKENS" />
+        <xsd:attribute name="nonUSmarkings" type="xsd:NMTOKENS" />
+        <xsd:attribute name="releasableTo" type="xsd:NMTOKENS" />
+    </xsd:attributeGroup>
+    <xsd:simpleType name="noteData">
+        <xsd:restriction base="xsd:string" />
+    </xsd:simpleType>
+    <xsd:complexType name="note">
+        <xsd:sequence>
+            <xsd:element name="noteTitle" minOccurs="0">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:string">
+                        <xsd:maxLength value="80" />
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="noteData">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:string" />
+                </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="dataSourceRecordSet" type="tns:dataSourceRecordSet" minOccurs="0" />
+        </xsd:sequence>
+        <xsd:attribute name="linkType" type="tns:nonEmptyString" />
+        <xsd:attribute name="aclId" type="xsd:IDREF" />
+        <xsd:attribute name="id" type="xsd:ID" />
+        <xsd:attributeGroup ref="tns:SecurityAttributes">
+            <xsd:annotation>
+                <xsd:documentation>
+                    The SecurityAttributes attribute group is no longer supported by Palantir.
+                    It remains solely for XML parsing backwards compatibility. Beyond that,
+                    attributes defined in the SecurityAttributes attribute group are ignored.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attributeGroup>
+    </xsd:complexType>
+    <xsd:complexType name="object">
+        <xsd:sequence>
+            <xsd:element name="title" minOccurs="0">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:string">
+                        <xsd:maxLength value="80" />
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="description" minOccurs="0">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:string">
+                        <xsd:maxLength value="4000" />
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="propertySet" type="tns:propertySet" minOccurs="0" />
+            <xsd:element name="mediaSet" type="tns:mediaSet" minOccurs="0" />
+            <xsd:element name="noteSet" type="tns:noteSet" minOccurs="0" />
+        </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:ID" use="required" />
+        <xsd:attribute name="externalId" type="tns:nonEmptyString" />
+        <xsd:attribute name="resolvesTo" type="tns:nonEmptyString" />
+        <xsd:attribute name="type" type="tns:nonEmptyString" use="required" />
+        <xsd:attribute name="baseType" type="xsd:anyURI" />
+        <xsd:attribute name="timeStart" type="xsd:dateTime" />
+        <xsd:attribute name="timeEnd" type="xsd:dateTime" />
+        <xsd:attribute name="groupFlag" type="xsd:boolean" default="false" />
+        <xsd:attributeGroup ref="tns:SecurityAttributes">
+            <xsd:annotation>
+                <xsd:documentation>
+                    The SecurityAttributes attribute group is no longer supported by Palantir.
+                    It remains solely for XML parsing backwards compatibility. Beyond that,
+                    attributes defined in the SecurityAttributes attribute group are ignored.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attributeGroup>
+    </xsd:complexType>
+    <xsd:complexType name="noteSet">
+        <xsd:sequence>
+            <xsd:element name="note" type="tns:note" maxOccurs="unbounded" />
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="objectSet">
+        <xsd:sequence>
+            <xsd:element name="object" type="tns:object" maxOccurs="unbounded" />
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="dataSource">
+        <xsd:sequence>
+            <xsd:element name="name" minOccurs="0">
+                <xsd:simpleType>
+                    <xsd:restriction base="tns:nonEmptyString">
+                        <xsd:maxLength value="80" />
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="description" minOccurs="0">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:string">
+                        <xsd:maxLength value="1000" />
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="discoveryMessage" minOccurs="0">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:string">
+                        <xsd:maxLength value="4000" />
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="primaryObject" type="tns:primaryObject" minOccurs="0" />
+        </xsd:sequence>
+        <xsd:attributeGroup ref="tns:SecurityAttributes">
+            <xsd:annotation>
+                <xsd:documentation>
+                    The SecurityAttributes attribute group is no longer supported by Palantir.
+                    It remains solely for XML parsing backwards compatibility. Beyond that,
+                    attributes defined in the SecurityAttributes attribute group are ignored.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attributeGroup>
+        <xsd:attribute name="type" type="xsd:anyURI" />
+        <xsd:attribute name="id" type="xsd:ID" use="required" />
+        <xsd:attribute name="externalId" type="tns:nonEmptyString" />
+        <xsd:attribute name="isStub" type="xsd:boolean" />
+        <xsd:attribute name="aclId" type="xsd:IDREF" />
+    </xsd:complexType>
+    <xsd:complexType name="dataSourceSet">
+        <xsd:sequence>
+            <xsd:element name="dataSource" type="tns:dataSource" minOccurs="0" maxOccurs="unbounded" />
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="link">
+        <xsd:sequence>
+            <xsd:element name="text" type="xsd:string" minOccurs="0" />
+            <xsd:choice minOccurs="0">
+                <xsd:element name="timestamp" type="tns:timestamp" />
+                <xsd:element name="timeInterval" type="tns:timeInterval" />
+            </xsd:choice>
+            <xsd:element name="dataSourceRecordSet" type="tns:dataSourceRecordSet" minOccurs="0" />
+        </xsd:sequence>
+        <xsd:attributeGroup ref="tns:SecurityAttributes">
+            <xsd:annotation>
+                <xsd:documentation>
+                    The SecurityAttributes attribute group is no longer supported by Palantir.
+                    It remains solely for XML parsing backwards compatibility. Beyond that,
+                    attributes defined in the SecurityAttributes attribute group are ignored.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attributeGroup>
+        <xsd:attribute name="parentRef" type="xsd:IDREF" use="required" />
+        <xsd:attribute name="childRef" type="xsd:IDREF" use="required" />
+        <xsd:attribute name="type" type="xsd:string" use="required" />
+        <xsd:attribute name="role" type="xsd:anyURI" use="required" />
+        <xsd:attribute name="id" type="xsd:ID" />
+        <xsd:attribute name="aclId" type="xsd:IDREF" />
+    </xsd:complexType>
+    <xsd:complexType name="linkSet">
+        <xsd:sequence minOccurs="0">
+            <xsd:element name="link" type="tns:link" maxOccurs="unbounded" />
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="graph">
+        <xsd:sequence>
+            <xsd:element name="aclSet" type="tns:aclSet" minOccurs="0" />
+            <xsd:element name="dataSourceSet" type="tns:dataSourceSet" minOccurs="0" />
+            <xsd:element name="objectSet" type="tns:objectSet" minOccurs="0" />
+            <xsd:element name="linkSet" type="tns:linkSet" minOccurs="0" />
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="palantir">
+        <xsd:sequence>
+            <xsd:element name="graph" type="tns:graph" />
+        </xsd:sequence>
+        <xsd:attribute name="systemId" type="xsd:unsignedLong" />
+    </xsd:complexType>
+    <xsd:element name="palantir" type="tns:palantir" />
+    <xsd:simpleType name="negativeOneLong">
+        <xsd:restriction base="xsd:long">
+            <xsd:maxInclusive value="-1" />
+            <xsd:minInclusive value="-1" />
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="nonNegativeLong">
+        <xsd:restriction base="xsd:long">
+            <xsd:minInclusive value="1" />
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="realmId">
+        <xsd:union memberTypes="tns:negativeOneLong tns:nonNegativeLong" />
+    </xsd:simpleType>
+    <xsd:complexType name="primaryObject">
+        <xsd:attribute name="objectRef" type="xsd:IDREF" use="required" />
+    </xsd:complexType>
+    <xsd:complexType name="propertyRawValue">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string" />
+        </xsd:simpleContent>
+    </xsd:complexType>
+    <xsd:complexType name="propertyUnparsedValue">
+        <xsd:annotation>
+            <xsd:documentation>
+                This element allows us to capture unparsed property data, as opposed to raw values.
+                Raw values are put through Property Makers to build Properties. Unparsed data
+                is just assembled as-is into unparsed properties.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string" />
+        </xsd:simpleContent>
+    </xsd:complexType>
+    <xsd:simpleType name="customKeyword">
+        <xsd:restriction base="xsd:string" />
+    </xsd:simpleType>
+    <xsd:complexType name="propertyTimeInterval">
+        <xsd:attribute name="timeStart" type="xsd:dateTime" />
+        <xsd:attribute name="timeEnd" type="xsd:dateTime" />
+    </xsd:complexType>
+    <xsd:complexType name="aclSet">
+        <xsd:choice>
+            <xsd:sequence>
+                <xsd:element name="defaultAcl" type="tns:acl" />
+                <xsd:element name="acl" type="tns:acl" minOccurs="0" maxOccurs="unbounded" />
+            </xsd:sequence>
+            <xsd:element name="acl" type="tns:acl" maxOccurs="unbounded" />
+        </xsd:choice>
+    </xsd:complexType>
+    <xsd:complexType name="acl">
+        <xsd:sequence>
+            <xsd:choice>
+                <xsd:element name="aclReference" type="tns:aclReference" />
+                <xsd:element name="aclSpecification" type="tns:aclSpecification" maxOccurs="unbounded">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            NOTE: While an ACL can have an unlimited number of ACL specifications,
+                            only one of them can be a classification ACL specification. The Palantir
+                            XML parser will fail to process any XML that contains an ACL with multiple
+                            classification ACL specifications.
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:element>
+            </xsd:choice>
+        </xsd:sequence>
+        <xsd:attribute name="aclId" type="xsd:ID" use="required" />
+        <xsd:attribute name="aclDomain" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    The acl domain identifies a group of systems that share the same security model.
+                    Acls from domains other than your own system's domain can be transformed during
+                    import. Acls with the domain '__LOCAL_ACL' or '' are treated the same as acls
+                    local to the importing system.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+    <xsd:complexType name="aclReference">
+        <xsd:attribute name="aclId" type="xsd:long" />
+    </xsd:complexType>
+    <xsd:complexType name="aclSpecification">
+        <xsd:attribute name="type" default="group">
+            <xsd:annotation>
+                <xsd:documentation>
+                    For backwards compatibility, the type attribute isn't required. If it isn't
+                    specified, as indicated by its associated default, the assumed value is 'group'.
+                </xsd:documentation>
+            </xsd:annotation>
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:string">
+                    <xsd:enumeration value="group" />
+                    <xsd:enumeration value="user">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                'user' is no longer a valid value for the type attribute. When the Palantir
+                                XML parser encounters this value, it logs a warning, and instead treats
+                                the type attribute as if its associated value is 'group'. While, from the
+                                perspective of XML validation, setting the type attribute to 'user' is OK,
+                                given the interpretation of 'user' as 'group', please note that doing so
+                                may lead to unexpected errors.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:enumeration>
+                    <xsd:enumeration value="classification" />
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:attribute>
+        <xsd:attribute name="authSourceTag" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    If authSourceTag is not specified, we attempt to locate the externalId
+                    over all authentication sources. The system expects to match only one
+                    authentication source in this case and fails if it finds 0 or multiple
+                    sources with a match. Please note that, if specified, authSourceTag is
+                    ignored if type is set to 'classification'.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="externalId" type="tns:nonEmptyString" use="required">
+            <xsd:annotation>
+                <xsd:documentation>
+                    The ID associated with the entity referenced by the aclSpecification. For example, if
+                    type is set to 'group' and authSourceTag references an LDAP authentication source, the
+                    value associated with the externalId attribute might be either a DN or an object GUID.
+                    If type is set to 'classification', the Palantir XML parser interprets the value
+                    associated with the externalId attribute as a classification string.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="permissions">
+            <xsd:annotation>
+                <xsd:documentation>
+                    The permissions attribute isn't required because the permissions associated with
+                    classifications are implied (always write). Note, however, that if type is set to 'group',
+                    the Palantir XML parser will raise an error if the permissions attribute isn't specified.
+                    If the type is set to 'classification' and the permissions attribute is specified, the
+                    Palantir XML parser will log an appropriate warning and ignore the specified permissions.
+                </xsd:documentation>
+            </xsd:annotation>
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:string">
+                    <xsd:enumeration value="discovery" />
+                    <xsd:enumeration value="read" />
+                    <xsd:enumeration value="write" />
+                    <xsd:enumeration value="owner" />
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:attribute>
+    </xsd:complexType>
+    <xsd:simpleType name="nonEmptyString">
+        <xsd:restriction base="xsd:string">
+            <xsd:minLength value="1" />
+            <xsd:whiteSpace value="preserve" />
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:complexType name="gisData">
+        <xsd:sequence>
+            <xsd:choice minOccurs="0">
+                <xsd:element name="point" type="tns:point" />
+                <xsd:element name="geo_data" type="tns:geo_data" />
+            </xsd:choice>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="point">
+        <xsd:sequence minOccurs="0">
+            <xsd:element name="userLatLong" type="tns:userLatLong" minOccurs="0" />
+            <xsd:element name="userUTM" type="tns:userUTM" minOccurs="0" />
+            <xsd:element name="userMGRS" type="tns:userMGRS" minOccurs="0" />
+            <xsd:element name="userElevation" type="tns:userElevation" minOccurs="0" />
+        </xsd:sequence>
+        <xsd:attribute name="latitude" type="xsd:double" />
+        <xsd:attribute name="longitude" type="xsd:double" />
+        <xsd:attribute name="elevation" type="xsd:double" />
+    </xsd:complexType>
+    <xsd:complexType name="userLatLong">
+        <xsd:attribute name="latitude" type="xsd:string" use="required" />
+        <xsd:attribute name="longitude" type="xsd:string" use="required" />
+    </xsd:complexType>
+    <xsd:complexType name="userElevation">
+        <xsd:attribute name="elevation" type="xsd:string" use="required" />
+    </xsd:complexType>
+    <xsd:complexType name="userUTM">
+        <xsd:attribute name="utmZone" type="xsd:string" use="required" />
+        <xsd:attribute name="utmNorthing" type="xsd:string" use="required" />
+        <xsd:attribute name="utmEasting" type="xsd:string" use="required" />
+    </xsd:complexType>
+    <xsd:complexType name="userMGRS">
+        <xsd:attribute name="mgrs" type="xsd:string" use="required" />
+    </xsd:complexType>
+    <xsd:simpleType name="geo_data">
+        <xsd:restriction base="xsd:string" />
+    </xsd:simpleType>
+    <xsd:complexType name="timeInterval">
+        <xsd:attribute name="timeStart" type="xsd:dateTime" />
+        <xsd:attribute name="timeEnd" type="xsd:dateTime" />
+    </xsd:complexType>
+    <xsd:complexType name="timestamp">
+        <xsd:attribute name="timestamp" type="xsd:dateTime" use="required" />
+    </xsd:complexType>
+</xsd:schema>
