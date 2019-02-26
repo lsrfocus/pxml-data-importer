@@ -93,8 +93,11 @@ linkNames = set()
 for xml in glob.glob('./baseRealmDump/9/9/9/*.xml'):
     parse(xml)
 
-print "\nObject types:"
+print "\nObject types (with properties):"
 prettyDump(objectTypes)
+
+print "\nObject types (raw):"
+prettyDump(objectTypes.keys())
 
 print "\nObject types containing media:"
 prettyDump(objectTypesWithMedia)
