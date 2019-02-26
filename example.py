@@ -62,6 +62,6 @@ def parse(xmlFile):
 # This is the main entry point of the program; run this as python example.py
 
 # this will give us a list of all xml files in the data directory
-for xml in glob.glob('./baseRealmDump/*/*/*/*.xml'):
+for xml in glob.glob('./baseRealmDump/9/9/9/6178876863978415320_30ca2999.xml'):
     parse(xml)
     # break
