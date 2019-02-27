@@ -36,6 +36,8 @@ def getComplexity(property):
 
 def getMultiComplexity(value):
     components = value.propertyComponent
+    if len(components) == 0:
+        print "WARN: No components"
     return str(map(lambda x: x.type_, components))
 
 # Documentation for PXML can be found at - https://docs.palantir.com/gotham/all/index.html#../Subsystems/gotham/Content/xml/pXMLFormatOverview.htm
@@ -148,7 +150,7 @@ for xml in files:
 print "\nObject types (with properties):"
 prettyDump(objectTypes)
 
-print "\nObject types (raw):"
+print "\nObject types (just the keys):"
 prettyDump(objectTypes.keys())
 
 print "\nLinks:"
