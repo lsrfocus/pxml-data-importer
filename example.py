@@ -83,8 +83,8 @@ def parse(xmlFile, index, totalFiles):
 
             parentType = objects[link.parentRef].type_ if objects[link.parentRef] is not None else None
             childType = objects[link.childRef].type_ if objects[link.childRef] is not None else None
-            linkName = str(parentType) + " --> " + str(childType)
-            linkNames.add(linkName)
+            linkType = str(parentType) + " -[" + link.type_.replace("com.palantir.link.", "") + "]-> " + str(childType)
+            linkTypes.add(linkType)
 
 ####################################################################################################
 
@@ -94,7 +94,7 @@ failures = []
 # Metadata for the schema.
 objectTypes = {}
 objectTypesWithMedia = set()
-linkNames = set()
+linkTypes = set()
 
 # this will give us a list of all xml files in the data directory
 files = glob.glob('./baseRealmDump/9/9/9/*.xml')
@@ -115,7 +115,7 @@ print "\nObject types containing media:"
 prettyDump(objectTypesWithMedia)
 
 print "\nLinks:"
-prettyDump(linkNames)
+prettyDump(linkTypes)
 
 print "\nFailures (probably contain non-ASCII for dataSource names):"
 prettyDump(failures)
