@@ -83,13 +83,13 @@ def parseLinks(xmlFile, index, totalFiles):
             # look up the object by this ID in the objects hash for more information about the object itself
             # print "%s is the parent of %s" % (link.parentRef, link.childRef)
             try:
-                parent = objects[link.parentRef]
-                child = objects[link.childRef]
+                parentType = objects[link.parentRef].type_.replace("com.palantir.object.", "")
+                childType = objects[link.childRef].type_.replace("com.palantir.object.", "")
             except:
                 linkFailures.add(xmlFile)
                 continue
 
-            linkType = parent.type_ + " -[" + link.type_.replace("com.palantir.link.", "") + "]-> " + child.type_
+            linkType = parentType + " -[" + link.type_.replace("com.palantir.link.", "") + "]-> " + childType
             linkTypes.add(linkType)
 
 ####################################################################################################
