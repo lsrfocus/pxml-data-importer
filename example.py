@@ -33,10 +33,10 @@ def parseObjects(xmlFile, index, totalFiles):
 
     if root.graph.objectSet is not None:
         for object in root.graph.objectSet.object:
-            objectType = object.type_
+            objectType = object.type_.replace("com.palantir.object.", "")
             # print "\t%s" % objectType
 
-            if objectType == "com.palantir.object.abstract":
+            if objectType == "abstract":
                 continue
 
             if objectType not in objectTypes:
@@ -45,10 +45,15 @@ def parseObjects(xmlFile, index, totalFiles):
             if object.propertySet is not None:
                 # print "\tProperties..."
                 for property in object.propertySet.property:
-                    propertyType = property.type_
+                    propertyType = property.type_.replace("com.palantir.property.", "")
                     # print "\t\t%s: %s" % (property.type_, property.propertyValue.propertyData)
 
-                    objectTypes[objectType].add(propertyType)
+                    complexity = "single" if property.propertyValue.propertyData is not None \
+                    else "multi" if property.propertyValue.propertyComponent is not None \
+                    else "unknown"
+
+                    propertyString = propertyType + " (" + complexity + ")"
+                    objectTypes[objectType].add(propertyString)
 
             # Create a media/ folder in the same directory as this script if you want to capture attachments
             # if object.mediaSet is not None:
