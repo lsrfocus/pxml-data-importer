@@ -13,6 +13,11 @@ class SetEncoder(json.JSONEncoder):
 def prettyDump(obj):
     print json.dumps(obj, sort_keys=True, indent=4, cls=SetEncoder)
 
+def getComplexity(property):
+    return "single" if property.propertyValue.propertyData is not None \
+        else "multi" if property.propertyValue.propertyComponent is not None \
+        else "unknown"
+
 # Documentation for PXML can be found at - https://docs.palantir.com/gotham/all/index.html#../Subsystems/gotham/Content/xml/pXMLFormatOverview.htm
 # No matter how complicated the XML looks, it will always have this structure:
 # An element called 'graph' that contains these elements (these elements may be empty, i.e. if there are no links)
@@ -48,9 +53,7 @@ def parseObjects(xmlFile, index, totalFiles):
                     propertyType = property.type_.replace("com.palantir.property.", "")
                     # print "\t\t%s: %s" % (property.type_, property.propertyValue.propertyData)
 
-                    complexity = "single" if property.propertyValue.propertyData is not None \
-                    else "multi" if property.propertyValue.propertyComponent is not None \
-                    else "unknown"
+                    complexity = getComplexity(property)
 
                     propertyString = propertyType + " (" + complexity + ")"
                     objectTypes[objectType].add(propertyString)
