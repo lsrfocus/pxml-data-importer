@@ -3,6 +3,6 @@ baseRealmDump/
 media/
 
 *.pyc
-summary.txt
+summary*.txt
 
 .DS_Store
