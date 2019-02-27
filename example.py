@@ -15,8 +15,12 @@ def prettyDump(obj):
 
 def getComplexity(property):
     return "single" if property.propertyValue.propertyData is not None \
-        else "multi" if property.propertyValue.propertyComponent is not None \
+        else getMultiComplexity(property) if property.propertyValue.propertyComponent is not None \
         else "unknown"
+
+def getMultiComplexity(property):
+    components = property.propertyValue.propertyComponent
+    return str(map(lambda x: x.type_, components))
 
 # Documentation for PXML can be found at - https://docs.palantir.com/gotham/all/index.html#../Subsystems/gotham/Content/xml/pXMLFormatOverview.htm
 # No matter how complicated the XML looks, it will always have this structure:
