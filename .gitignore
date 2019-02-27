@@ -2,4 +2,6 @@ baseRealmDump.zip
 baseRealmDump/
 media/
 
+*.pyc
+
 .DS_Store

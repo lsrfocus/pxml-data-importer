@@ -2801,7 +2801,7 @@ class dataSource(GeneratedsSuper):
     def validate_nameType(self, value):
         # Validate type nameType, a restriction on tns:nonEmptyString.
         if value is not None and Validate_simpletypes_:
-            if len(str(value)) > 80:
+            if len(str(value.encode("utf-8"))) > 80:
                 warnings_.warn('Value "%(value)s" does not match xsd maxLength restriction on nameType' % {"value" : value} )
     def validate_descriptionType1(self, value):
         # Validate type descriptionType1, a restriction on xsd:string.

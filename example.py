@@ -24,8 +24,8 @@ def parseObjects(xmlFile, index, totalFiles):
 
     try:
         root = pxml.parse(xmlFile, True)
-    except UnicodeEncodeError:
-        unicodeFailures.add(xmlFile)
+    except:
+        parseFailures.add(xmlFile)
         return
 
     if root.graph.objectSet is not None:
@@ -66,8 +66,8 @@ def parseLinks(xmlFile, index, totalFiles):
 
     try:
         root = pxml.parse(xmlFile, True)
-    except UnicodeEncodeError:
-        unicodeFailures.add(xmlFile)
+    except:
+        parseFailures.add(xmlFile)
         return
 
     if root.graph.linkSet is not None:
@@ -88,7 +88,7 @@ def parseLinks(xmlFile, index, totalFiles):
 
 # Parsing metadata.
 objects = {}
-unicodeFailures = set()
+parseFailures = set()
 linkFailures = set()
 
 # Metadata for the schema.
@@ -118,8 +118,8 @@ prettyDump(objectTypes.keys())
 print "\nLinks:"
 prettyDump(linkTypes)
 
-print "\nUnicode failures (probably contain non-ASCII for dataSource names):"
-prettyDump(unicodeFailures)
+print "\nParse failures (unknown cause):"
+prettyDump(parseFailures)
 
 print "\nLink failures (probably exist in a file that wasn't included):"
 prettyDump(linkFailures)
