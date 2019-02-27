@@ -25,7 +25,7 @@ def parseObjects(xmlFile, index, totalFiles):
     try:
         root = pxml.parse(xmlFile, True)
     except UnicodeEncodeError:
-        unicodeFailures.append(xmlFile)
+        unicodeFailures.add(xmlFile)
         return
 
     if root.graph.objectSet is not None:
@@ -67,7 +67,7 @@ def parseLinks(xmlFile, index, totalFiles):
     try:
         root = pxml.parse(xmlFile, True)
     except UnicodeEncodeError:
-        unicodeFailures.append(xmlFile)
+        unicodeFailures.add(xmlFile)
         return
 
     if root.graph.linkSet is not None:
@@ -75,7 +75,7 @@ def parseLinks(xmlFile, index, totalFiles):
             # look up the object by this ID in the objects hash for more information about the object itself
             # print "%s is the parent of %s" % (link.parentRef, link.childRef)
             if not (hasattr(objects, link.parentRef) and hasattr(objects, link.childRef)):
-                linkFailures.append(xmlFile)
+                linkFailures.add(xmlFile)
                 continue
 
             parentType = objects[link.parentRef].type_ if objects[link.parentRef] is not None else None
@@ -87,8 +87,8 @@ def parseLinks(xmlFile, index, totalFiles):
 
 # Parsing metadata.
 objects = {}
-unicodeFailures = []
-linkFailures = []
+unicodeFailures = set()
+linkFailures = set()
 
 # Metadata for the schema.
 objectTypes = {}
