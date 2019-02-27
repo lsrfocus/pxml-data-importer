@@ -19,30 +19,14 @@ def prettyDump(obj):
 #       dataSourceSet
 #       objectSet
 #       linkSet
-def parse(xmlFile, index, totalFiles):
-    print "Processing %s / %s (%s)..." % (index, totalFiles, xmlFile)
+def parseObjects(xmlFile, index, totalFiles):
+    print "Processing object %s / %s (%s)..." % (index, totalFiles, xmlFile)
 
     try:
         root = pxml.parse(xmlFile, True)
     except UnicodeEncodeError:
         failures.append(xmlFile)
         return
-
-    # get the data sources
-    # print "Data Sources:"
-    # for dataSource in root.graph.dataSourceSet.dataSource:
-    #     name = dataSource.name
-    #     description = dataSource.description
-    #     print "\tname=%s" % name
-    #     print "\tdescription=%s" % description
-    #     print
-
-    # get the objects, properties and media (saved as a separate file)
-    # print "Objects:"
-
-    # index all objects by their ID for working with links if we want to
-    # later on
-    objects = {}
 
     if root.graph.objectSet is not None:
         for object in root.graph.objectSet.object:
@@ -76,6 +60,15 @@ def parse(xmlFile, index, totalFiles):
             # this will just be an easy way to reference a linked object later if we want to
             objects[object.id] = object
 
+def parseLinks(xmlFile, index, totalFiles):
+    print "Processing link %s / %s (%s)..." % (index, totalFiles, xmlFile)
+
+    try:
+        root = pxml.parse(xmlFile, True)
+    except UnicodeEncodeError:
+        failures.append(xmlFile)
+        return
+
     if root.graph.linkSet is not None:
         for link in root.graph.linkSet.link:
             # look up the object by this ID in the objects hash for more information about the object itself
@@ -89,6 +82,7 @@ def parse(xmlFile, index, totalFiles):
 ####################################################################################################
 
 # Parsing metadata.
+objects = {}
 failures = []
 
 # Metadata for the schema.
@@ -99,10 +93,15 @@ linkTypes = set()
 # this will give us a list of all xml files in the data directory
 files = glob.glob('./baseRealmDump/9/9/9/*.xml')
 totalFiles = len(files)
-index = 1
 
+index = 1
 for xml in files:
-    parse(xml, index, totalFiles)
+    parseObjects(xml, index, totalFiles)
+    index += 1
+
+index = 1
+for xml in files:
+    parseLinks(xml, index, totalFiles)
     index += 1
 
 print "\nObject types (with properties):"
