@@ -7,11 +7,12 @@ import sys
 class SetEncoder(json.JSONEncoder):
     def default(self, obj):
        if isinstance(obj, set):
-           return list(obj)
+           return sorted(list(obj))
        return json.JSONEncoder.default(self, obj)
 
 def prettyDump(obj):
-    print json.dumps(obj, sort_keys=True, indent=4, cls=SetEncoder)
+    sortedObj = sorted(obj) if (isinstance(obj, set) or isinstance(obj, list)) else obj
+    print json.dumps(sortedObj, sort_keys=True, indent=4, cls=SetEncoder)
 
 def getComplexity(property):
     value = property.propertyValue
