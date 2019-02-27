@@ -25,13 +25,16 @@ def parseObjects(xmlFile, index, totalFiles):
     try:
         root = pxml.parse(xmlFile, True)
     except UnicodeEncodeError:
-        failures.append(xmlFile)
+        unicodeFailures.append(xmlFile)
         return
 
     if root.graph.objectSet is not None:
         for object in root.graph.objectSet.object:
             objectType = object.type_
             # print "\t%s" % objectType
+
+            if objectType == "com.palantir.object.abstract":
+                continue
 
             if objectType not in objectTypes:
                 objectTypes[objectType] = set()
@@ -66,13 +69,16 @@ def parseLinks(xmlFile, index, totalFiles):
     try:
         root = pxml.parse(xmlFile, True)
     except UnicodeEncodeError:
-        failures.append(xmlFile)
+        unicodeFailures.append(xmlFile)
         return
 
     if root.graph.linkSet is not None:
         for link in root.graph.linkSet.link:
             # look up the object by this ID in the objects hash for more information about the object itself
             # print "%s is the parent of %s" % (link.parentRef, link.childRef)
+            if not (hasattr(objects, link.parentRef) and hasattr(objects, link.childRef)):
+                linkFailures.append(xmlFile)
+                continue
 
             parentType = objects[link.parentRef].type_ if objects[link.parentRef] is not None else None
             childType = objects[link.childRef].type_ if objects[link.childRef] is not None else None
@@ -83,7 +89,8 @@ def parseLinks(xmlFile, index, totalFiles):
 
 # Parsing metadata.
 objects = {}
-failures = []
+unicodeFailures = []
+linkFailures = []
 
 # Metadata for the schema.
 objectTypes = {}
@@ -116,5 +123,8 @@ prettyDump(objectTypesWithMedia)
 print "\nLinks:"
 prettyDump(linkTypes)
 
-print "\nFailures (probably contain non-ASCII for dataSource names):"
-prettyDump(failures)
+print "\nUnicode failures (probably contain non-ASCII for dataSource names):"
+prettyDump(unicodeFailures)
+
+print "\nLink failures (probably exist in a file that wasn't included):"
+prettyDump(linkFailures)
