@@ -82,19 +82,21 @@ def parseObjects(xmlFile, index, totalFiles):
 
                     if propertyType in localPropertyTypes:
                         # Designate that this property type has multiple instances per object.
-                        propertyTypeStr += "*"
                         hasMulti = True
 
                     localPropertyTypes.add(propertyType)
 
                     complexity = getComplexity(property)
-                    propertyString = propertyTypeStr + " (" + complexity + ")"
-                    objectTypes[objectType].add(propertyString)
+                    propertyStringSingle = propertyType + " (" + complexity + ")"
+                    propertyStringMulti = propertyType + "* (" + complexity + ")"
 
+                    # Make sure there's exactly one type.
                     if hasMulti:
-                        singleName = propertyString.replace("*", "")
-                        if singleName in objectTypes[objectType]:
-                            objectTypes[objectType].remove(singleName)
+                        objectTypes[objectType].add(propertyStringMulti)
+                        if propertyStringSingle in objectTypes[objectType]:
+                            objectTypes[objectType].remove(propertyStringSingle)
+                    elif propertyStringMulti not in objectTypes[objectType]:
+                        objectTypes[objectType].add(propertyStringSingle)
 
             # Create a media/ folder in the same directory as this script if you want to capture attachments
             if object.mediaSet is not None:
