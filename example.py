@@ -14,12 +14,14 @@ def prettyDump(obj):
     print json.dumps(obj, sort_keys=True, indent=4, cls=SetEncoder)
 
 def getComplexity(property):
-    return "single" if property.propertyValue.propertyData is not None \
-        else getMultiComplexity(property) if property.propertyValue.propertyComponent is not None \
+    value = property.propertyValue
+    return "single" if value.propertyData is not None \
+        else "interval" if value.propertyTimeInterval is not None \
+        else getMultiComplexity(value) if value.propertyComponent is not None \
         else "unknown"
 
-def getMultiComplexity(property):
-    components = property.propertyValue.propertyComponent
+def getMultiComplexity(value):
+    components = value.propertyComponent
     return str(map(lambda x: x.type_, components))
 
 # Documentation for PXML can be found at - https://docs.palantir.com/gotham/all/index.html#../Subsystems/gotham/Content/xml/pXMLFormatOverview.htm
