@@ -74,13 +74,14 @@ def parseLinks(xmlFile, index, totalFiles):
         for link in root.graph.linkSet.link:
             # look up the object by this ID in the objects hash for more information about the object itself
             # print "%s is the parent of %s" % (link.parentRef, link.childRef)
-            if not (hasattr(objects, link.parentRef) and hasattr(objects, link.childRef)):
+            try:
+                parent = objects[link.parentRef]
+                child = objects[link.childRef]
+            except:
                 linkFailures.add(xmlFile)
                 continue
 
-            parentType = objects[link.parentRef].type_ if objects[link.parentRef] is not None else None
-            childType = objects[link.childRef].type_ if objects[link.childRef] is not None else None
-            linkType = str(parentType) + " -[" + link.type_.replace("com.palantir.link.", "") + "]-> " + str(childType)
+            linkType = parent.type_ + " -[" + link.type_.replace("com.palantir.link.", "") + "]-> " + child.type_
             linkTypes.add(linkType)
 
 ####################################################################################################
