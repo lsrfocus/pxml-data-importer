@@ -66,15 +66,19 @@ def parseObjects(xmlFile, index, totalFiles):
                     objectTypes[objectType].add(propertyString)
 
             # Create a media/ folder in the same directory as this script if you want to capture attachments
-            # if object.mediaSet is not None:
-                # for media in object.mediaSet.media:
-                #     title = media.id
-                #     # Could use media.mediaTitle, but that hits encoding issues with Arabic
-                #     data = media.mediaData
+            if object.mediaSet is not None:
+                for media in object.mediaSet.media:
+                    try:
+                        title = media.mediaTitle.encode("utf-8")
+                    except:
+                        # Possible encoding issue with arabic (according to original author).
+                        title = media.id
 
-                #     mediaFile = open('media/' + title, 'wb')
-                #     mediaFile.write(data)
-                #     mediaFile.close()
+                    data = media.mediaData
+
+                    mediaFile = open('media/' + title, 'wb')
+                    mediaFile.write(data)
+                    mediaFile.close()
 
             # this will just be an easy way to reference a linked object later if we want to
             objects[object.id] = object
