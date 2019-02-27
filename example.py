@@ -58,6 +58,9 @@ def parseObjects(xmlFile, index, totalFiles):
         parseFailures.add(xmlFile)
         return
 
+    # Properties just for this file.
+    localPropertyTypes = set()
+
     if root.graph.objectSet is not None:
         for object in root.graph.objectSet.object:
             objectType = object.type_.replace("com.palantir.object.", "")
@@ -75,8 +78,13 @@ def parseObjects(xmlFile, index, totalFiles):
                     propertyType = property.type_.replace("com.palantir.property.", "")
                     # print "\t\t%s: %s" % (property.type_, property.propertyValue.propertyData)
 
-                    complexity = getComplexity(property)
+                    if propertyType in localPropertyTypes:
+                        # Designate that this property type has multiple instances per object.
+                        propertyType += "*"
 
+                    localPropertyTypes.add(propertyType)
+
+                    complexity = getComplexity(property)
                     propertyString = propertyType + " (" + complexity + ")"
                     objectTypes[objectType].add(propertyString)
 
