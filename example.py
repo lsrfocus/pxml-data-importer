@@ -16,10 +16,23 @@ def prettyDump(obj):
 
 def getComplexity(property):
     value = property.propertyValue
-    return "single" if value.propertyData is not None \
+    complexity = "data" if value.propertyData is not None \
+        else "raw" if value.propertyRawValue is not None \
+        else "unparsed" if value.propertyUnparsedValue is not None \
         else "interval" if value.propertyTimeInterval is not None \
         else getMultiComplexity(value) if value.propertyComponent is not None \
         else "unknown"
+
+    extraProps = []
+    if property.timestamp is not None:
+        extraProps.append("timestamp")
+    if property.timeInterval is not None:
+        extraProps.append("timeInterval")
+    if property.gisData is not None:
+        extraProps.append("gisData")
+
+    extraPropsStr = " + " + " + ".join(extraProps) if len(extraProps) > 0 else ""
+    return complexity + extraPropsStr
 
 def getMultiComplexity(value):
     components = value.propertyComponent
