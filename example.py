@@ -84,7 +84,7 @@ def parseObjects(xmlFile, index, totalFiles):
             objects[object.id] = object
 
 def parseLinks(xmlFile, index, totalFiles):
-    print "Processing link %s / %s (%s)..." % (index, totalFiles, xmlFile)
+    print >> sys.stderr, "Processing link %s / %s (%s)..." % (index, totalFiles, xmlFile)
 
     try:
         root = parsedDocs[xmlFile]
