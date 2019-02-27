@@ -24,6 +24,7 @@ def parseObjects(xmlFile, index, totalFiles):
 
     try:
         root = pxml.parse(xmlFile, True)
+        parsedDocs[xmlFile] = root
     except:
         parseFailures.add(xmlFile)
         return
@@ -65,7 +66,7 @@ def parseLinks(xmlFile, index, totalFiles):
     print "Processing link %s / %s (%s)..." % (index, totalFiles, xmlFile)
 
     try:
-        root = pxml.parse(xmlFile, True)
+        root = parsedDocs[xmlFile]
     except:
         parseFailures.add(xmlFile)
         return
@@ -87,6 +88,7 @@ def parseLinks(xmlFile, index, totalFiles):
 ####################################################################################################
 
 # Parsing metadata.
+parsedDocs = {}
 objects = {}
 parseFailures = set()
 linkFailures = set()
