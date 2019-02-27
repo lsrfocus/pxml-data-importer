@@ -48,9 +48,7 @@ def parseObjects(xmlFile, index, totalFiles):
                     objectTypes[objectType].add(propertyType)
 
             # Create a media/ folder in the same directory as this script if you want to capture attachments
-            if object.mediaSet is not None:
-                objectTypesWithMedia.add(objectType)
-
+            # if object.mediaSet is not None:
                 # for media in object.mediaSet.media:
                 #     title = media.id
                 #     # Could use media.mediaTitle, but that hits encoding issues with Arabic
@@ -94,7 +92,6 @@ linkFailures = []
 
 # Metadata for the schema.
 objectTypes = {}
-objectTypesWithMedia = set()
 linkTypes = set()
 
 # this will give us a list of all xml files in the data directory
@@ -116,9 +113,6 @@ prettyDump(objectTypes)
 
 print "\nObject types (raw):"
 prettyDump(objectTypes.keys())
-
-print "\nObject types containing media:"
-prettyDump(objectTypesWithMedia)
 
 print "\nLinks:"
 prettyDump(linkTypes)
