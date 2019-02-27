@@ -76,17 +76,25 @@ def parseObjects(xmlFile, index, totalFiles):
                 # print "\tProperties..."
                 for property in object.propertySet.property:
                     propertyType = property.type_.replace("com.palantir.property.", "")
+                    propertyTypeStr = propertyType
+                    hasMulti = False
                     # print "\t\t%s: %s" % (property.type_, property.propertyValue.propertyData)
 
                     if propertyType in localPropertyTypes:
                         # Designate that this property type has multiple instances per object.
-                        propertyType += "*"
+                        propertyTypeStr += "*"
+                        hasMulti = True
 
                     localPropertyTypes.add(propertyType)
 
                     complexity = getComplexity(property)
-                    propertyString = propertyType + " (" + complexity + ")"
+                    propertyString = propertyTypeStr + " (" + complexity + ")"
                     objectTypes[objectType].add(propertyString)
+
+                    if hasMulti:
+                        singleName = propertyString.replace("*", "")
+                        if singleName in objectTypes[objectType]:
+                            objectTypes[objectType].remove(singleName)
 
             # Create a media/ folder in the same directory as this script if you want to capture attachments
             if object.mediaSet is not None:
