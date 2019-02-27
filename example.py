@@ -1,6 +1,7 @@
 import pxml
 import glob
 import json
+import sys
 
 # https://stackoverflow.com/a/8230505/763231
 class SetEncoder(json.JSONEncoder):
@@ -20,7 +21,8 @@ def prettyDump(obj):
 #       objectSet
 #       linkSet
 def parseObjects(xmlFile, index, totalFiles):
-    print "Processing object %s / %s (%s)..." % (index, totalFiles, xmlFile)
+    # Output to stderr so it's visible even when redirecting to file.
+    print >> sys.stderr, "Processing object %s / %s (%s)..." % (index, totalFiles, xmlFile)
 
     try:
         root = pxml.parse(xmlFile, True)
