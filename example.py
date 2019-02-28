@@ -31,6 +31,8 @@ def getComplexity(property):
         else getMultiComplexity(value) if value.propertyComponent is not None \
         else "unknown"
 
+    # After grepping the whole dataset, these 3 are the only additional attributes used.
+    # See pxml.py#property class for all the possibilities.
     extraProps = []
     if property.timestamp is not None:
         extraProps.append("timestamp")
