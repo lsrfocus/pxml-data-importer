@@ -117,7 +117,7 @@ def parseObjects(xmlFile, index, totalFiles):
             #         mediaFile.close()
 
             # this will just be an easy way to reference a linked object later if we want to
-            objects[object.id] = object
+            objects[object.id] = object.type_.replace("com.palantir.object.", "")
 
 def parseLinks(xmlFile, index, totalFiles):
     initParse("link", xmlFile, index, totalFiles)
@@ -133,8 +133,8 @@ def parseLinks(xmlFile, index, totalFiles):
             # look up the object by this ID in the objects hash for more information about the object itself
             # print "%s is the parent of %s" % (link.parentRef, link.childRef)
             try:
-                parentType = objects[link.parentRef].type_.replace("com.palantir.object.", "")
-                childType = objects[link.childRef].type_.replace("com.palantir.object.", "")
+                parentType = objects[link.parentRef]
+                childType = objects[link.childRef]
             except:
                 linkFailures.add(xmlFile)
                 continue
