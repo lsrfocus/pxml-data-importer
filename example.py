@@ -1,7 +1,16 @@
+# Documentation for PXML can be found at - https://docs.palantir.com/gotham/all/index.html#../Subsystems/gotham/Content/xml/pXMLFormatOverview.htm
+# No matter how complicated the XML looks, it will always have this structure:
+# An element called 'graph' that contains these elements (these elements may be empty, i.e. if there are no links)
+#       aclSet
+#       dataSourceSet
+#       objectSet
+#       linkSet
+
 import pxml
 import glob
 import json
 import sys
+import gc
 
 # https://stackoverflow.com/a/8230505/763231
 class SetEncoder(json.JSONEncoder):
@@ -40,16 +49,16 @@ def getMultiComplexity(value):
         print "WARN: No components"
     return str(map(lambda x: x.type_, components))
 
-# Documentation for PXML can be found at - https://docs.palantir.com/gotham/all/index.html#../Subsystems/gotham/Content/xml/pXMLFormatOverview.htm
-# No matter how complicated the XML looks, it will always have this structure:
-# An element called 'graph' that contains these elements (these elements may be empty, i.e. if there are no links)
-#       aclSet
-#       dataSourceSet
-#       objectSet
-#       linkSet
-def parseObjects(xmlFile, index, totalFiles):
+def initParse(parseType, xmlFile, index, totalFiles):
+    # Clean up parsed docs so it doesn't hog RAM.
+    unreachable = gc.collect()
+    print unreachable
+
     # Output to stderr so it's visible even when redirecting to file.
-    print >> sys.stderr, "Processing object %s / %s (%s)..." % (index, totalFiles, xmlFile)
+    print >> sys.stderr, "Processing %s %s / %s (%s)..." % (parseType, index, totalFiles, xmlFile)
+
+def parseObjects(xmlFile, index, totalFiles):
+    initParse("object", xmlFile, index, totalFiles)
 
     try:
         root = pxml.parse(xmlFile, True)
@@ -117,7 +126,7 @@ def parseObjects(xmlFile, index, totalFiles):
             objects[object.id] = object
 
 def parseLinks(xmlFile, index, totalFiles):
-    print >> sys.stderr, "Processing link %s / %s (%s)..." % (index, totalFiles, xmlFile)
+    initParse("link", xmlFile, index, totalFiles)
 
     try:
         root = parsedDocs[xmlFile]
