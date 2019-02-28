@@ -42,12 +42,21 @@ def getComplexity(property):
 
         if property.timestamp is not None:
             if not value.propertyTimeInterval.timeStart == value.propertyTimeInterval.timeEnd:
-                print "WARN: Timestamp has duration!"
+                print "WARN: Timestamp has duration"
+                exit()
+
+            if not value.propertyTimeInterval.timeStart == property.timestamp.timestamp:
+                print "WARN: propertyTimeInterval != property.timestamp"
                 exit()
 
         if property.timeInterval is not None:
             if value.propertyTimeInterval.timeStart == value.propertyTimeInterval.timeEnd:
-                print "WARN: Interval has no duration!"
+                print "WARN: Interval has no duration"
+                exit()
+
+            if (not value.propertyTimeInterval.timeStart == property.timeInterval.timeStart) \
+                    or (not value.propertyTimeInterval.timeEnd == property.timeInterval.timeEnd):
+                print "WARN: propertyTimeInterval != property.timeInterval"
                 exit()
 
     # After grepping the whole dataset, these 3 are the only additional attributes used.
