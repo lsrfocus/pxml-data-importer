@@ -31,14 +31,15 @@ def getComplexity(property):
         else getMultiComplexity(value) if value.propertyComponent is not None \
         else "unknown"
 
-    if value.propertyTimeInterval is not None:
-        # Empty propertyTimeInterval with no data; discard it.
-        if value.propertyTimeInterval.timeStart is None and value.propertyTimeInterval.timeStart is None:
-            return None
+    if complexity == "interval":
+        # Discard propertyTimeInterval because it always has either timestamp or timeInterval instead.
+        # This is verified by the assertions below.
+        complexity = "DISCARD"
 
-        if property.timestamp is None and property.timeInterval is None:
-            print "WARN: Found propertyTimeInterval without associated extraProps"
-            exit()
+        if value.propertyTimeInterval.timeStart is not None or value.propertyTimeInterval.timeEnd is not None:
+            if property.timestamp is None and property.timeInterval is None:
+                print "WARN: Found propertyTimeInterval without associated extraProps"
+                exit()
 
         if property.timestamp is not None:
             if not value.propertyTimeInterval.timeStart == value.propertyTimeInterval.timeEnd:
@@ -60,7 +61,7 @@ def getComplexity(property):
                 exit()
 
     # After grepping the whole dataset, these 3 are the only additional attributes used.
-    # See pxml.py#property class for all the possibilities.
+    # See pxml.py#property class for all the other possibilities.
     extraProps = []
     if property.timestamp is not None:
         extraProps.append("timestamp")
@@ -69,8 +70,11 @@ def getComplexity(property):
     if property.gisData is not None:
         extraProps.append("gisData")
 
+    if complexity is "DISCARD" and len(extraProps) is 0:
+        return None
+
     extraPropsStr = " + " + " + ".join(extraProps) if len(extraProps) > 0 else ""
-    return complexity + extraPropsStr
+    return (complexity + extraPropsStr).replace("DISCARD + ", "")
 
 def getMultiComplexity(value):
     components = value.propertyComponent
