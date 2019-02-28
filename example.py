@@ -32,8 +32,11 @@ def getComplexity(property):
         else "unknown"
 
     if value.propertyTimeInterval is not None:
+        # Empty propertyTimeInterval with no data; discard it.
+        if value.propertyTimeInterval.timeStart is None and value.propertyTimeInterval.timeStart is None:
+            return None
+
         if property.timestamp is None and property.timeInterval is None:
-            print vars(value.propertyTimeInterval)
             print "WARN: Found propertyTimeInterval without associated extraProps"
             exit()
 
@@ -105,9 +108,12 @@ def parseObjects(xmlFile, index, totalFiles):
                         # Designate that this property type has multiple instances per object.
                         hasMulti = True
 
+                    complexity = getComplexity(property)
+                    if complexity is None:
+                        continue;
+
                     localPropertyTypes.add(propertyType)
 
-                    complexity = getComplexity(property)
                     propertyStringSingle = propertyType + " (" + complexity + ")"
                     propertyStringMulti = propertyType + "* (" + complexity + ")"
 
