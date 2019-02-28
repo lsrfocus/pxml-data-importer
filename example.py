@@ -10,7 +10,6 @@ import pxml
 import glob
 import json
 import sys
-import gc
 
 # https://stackoverflow.com/a/8230505/763231
 class SetEncoder(json.JSONEncoder):
@@ -50,10 +49,6 @@ def getMultiComplexity(value):
     return str(map(lambda x: x.type_, components))
 
 def initParse(parseType, xmlFile, index, totalFiles):
-    # Clean up parsed docs so it doesn't hog RAM.
-    unreachable = gc.collect()
-    print unreachable
-
     # Output to stderr so it's visible even when redirecting to file.
     print >> sys.stderr, "Processing %s %s / %s (%s)..." % (parseType, index, totalFiles, xmlFile)
 
