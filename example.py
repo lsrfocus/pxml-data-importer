@@ -31,6 +31,22 @@ def getComplexity(property):
         else getMultiComplexity(value) if value.propertyComponent is not None \
         else "unknown"
 
+    if value.propertyTimeInterval is not None:
+        if property.timestamp is None and property.timeInterval is None:
+            print vars(value.propertyTimeInterval)
+            print "WARN: Found propertyTimeInterval without associated extraProps"
+            exit()
+
+        if property.timestamp is not None:
+            if not value.propertyTimeInterval.timeStart == value.propertyTimeInterval.timeEnd:
+                print "WARN: Timestamp has duration!"
+                exit()
+
+        if property.timeInterval is not None:
+            if value.propertyTimeInterval.timeStart == value.propertyTimeInterval.timeEnd:
+                print "WARN: Interval has no duration!"
+                exit()
+
     # After grepping the whole dataset, these 3 are the only additional attributes used.
     # See pxml.py#property class for all the possibilities.
     extraProps = []
