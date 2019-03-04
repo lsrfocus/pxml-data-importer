@@ -14,21 +14,12 @@ from neo4j import GraphDatabase
 
 driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "pwd"))
 
-def add_friend(tx, name, friend_name):
-    tx.run("MERGE (a:Person {name: $name}) "
-           "MERGE (a)-[:KNOWS]->(friend:Person {name: $friend_name})",
-           name=name, friend_name=friend_name)
+def addObject(tx, objectType, id, props):
+    print "Saving " + objectType + " # " + id + " with props: " + str(props)
 
-def print_friends(tx, name):
-    for record in tx.run("MATCH (a:Person)-[:KNOWS]->(friend) WHERE a.name = $name "
-                         "RETURN friend.name ORDER BY friend.name", name=name):
-        print(record["friend.name"])
-
-with driver.session() as session:
-    session.write_transaction(add_friend, "Arthur", "Guinevere")
-    session.write_transaction(add_friend, "Arthur", "Lancelot")
-    session.write_transaction(add_friend, "Arthur", "Merlin")
-    session.read_transaction(print_friends, "Arthur")
+    # TODO: Handle `None` = `null`
+    # CypherTypeError: Property values can only be of primitive types or arrays thereof
+    tx.run("MERGE (o:" + objectType + " {_id: $id}) SET o += $props", id=id, props=props)
 
 # https://stackoverflow.com/a/8230505/763231
 class SetEncoder(json.JSONEncoder):
@@ -41,19 +32,34 @@ def prettyDump(obj):
     sortedObj = sorted(obj) if (isinstance(obj, set) or isinstance(obj, list)) else obj
     print json.dumps(sortedObj, sort_keys=True, indent=4, cls=SetEncoder)
 
-def getComplexity(property):
+def getPropertyValue(property):
     value = property.propertyValue
-    complexity = "data" if value.propertyData is not None \
+    simpleComplexity = getSimpleComplexity(value)
+
+    # TODO: Handle interval, multiComplexity.
+    return {
+        "data": value.propertyData,
+        "raw": value.propertyRawValue,
+        "unparsed": value.propertyUnparsedValue,
+        "interval": 'None',
+    }.get(simpleComplexity, 'None')
+
+def getSimpleComplexity(value):
+    return "data" if value.propertyData is not None \
         else "raw" if value.propertyRawValue is not None \
         else "unparsed" if value.propertyUnparsedValue is not None \
         else "interval" if value.propertyTimeInterval is not None \
         else getMultiComplexity(value) if value.propertyComponent is not None \
         else "unknown"
 
-    if complexity == "interval":
+def getComplexity(property):
+    value = property.propertyValue
+    simpleComplexity = getSimpleComplexity(value)
+
+    if simpleComplexity == "interval":
         # Discard propertyTimeInterval because it always has either timestamp or timeInterval instead.
         # This is verified by the assertions below.
-        complexity = "DISCARD"
+        simpleComplexity = "DISCARD"
 
         if value.propertyTimeInterval.timeStart is not None or value.propertyTimeInterval.timeEnd is not None:
             if property.timestamp is None and property.timeInterval is None:
@@ -89,11 +95,11 @@ def getComplexity(property):
     if property.gisData is not None:
         extraProps.append("gisData")
 
-    if complexity is "DISCARD" and len(extraProps) is 0:
+    if simpleComplexity is "DISCARD" and len(extraProps) is 0:
         return None
 
     extraPropsStr = " + " + " + ".join(extraProps) if len(extraProps) > 0 else ""
-    return (complexity + extraPropsStr).replace("DISCARD + ", "")
+    return (simpleComplexity + extraPropsStr).replace("DISCARD + ", "")
 
 def getMultiComplexity(value):
     components = value.propertyComponent
@@ -122,6 +128,8 @@ def parseObjects(xmlFile, index, totalFiles):
             objectType = object.type_.replace("com.palantir.object.", "")
             # print "\t%s" % objectType
 
+            currProps = {}
+
             if objectType == "abstract":
                 continue
 
@@ -145,6 +153,11 @@ def parseObjects(xmlFile, index, totalFiles):
                         continue;
 
                     localPropertyTypes.add(propertyType)
+
+                    if propertyType not in currProps:
+                        currProps[propertyType] = []
+
+                    currProps[propertyType].append(getPropertyValue(property))
 
                     propertyStringSingle = propertyType + " (" + complexity + ")"
                     propertyStringMulti = propertyType + "* (" + complexity + ")"
@@ -173,7 +186,10 @@ def parseObjects(xmlFile, index, totalFiles):
             #         mediaFile.close()
 
             # this will just be an easy way to reference a linked object later if we want to
-            objects[object.id] = object.type_.replace("com.palantir.object.", "")
+            objects[object.id] = objectType
+
+            with driver.session() as session:
+                session.write_transaction(addObject, objectType, object.id, currProps)
 
 def parseLinks(xmlFile, index, totalFiles):
     initParse("link", xmlFile, index, totalFiles)
