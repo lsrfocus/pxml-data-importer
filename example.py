@@ -42,12 +42,13 @@ def getSimpleComplexity(value):
         else "raw" if value.propertyRawValue is not None \
         else "unparsed" if value.propertyUnparsedValue is not None \
         else "interval" if value.propertyTimeInterval is not None \
-        else getMultiComplexity(value) if value.propertyComponent is not None \
+        else "multi" if value.propertyComponent is not None \
         else "unknown"
 
 def parseProperty(property):
     value = property.propertyValue
     simpleComplexity = getSimpleComplexity(value)
+    multiComplexity = getMultiComplexity(value) if simpleComplexity is "multi" else None
 
     if simpleComplexity == "interval":
         # Discard propertyTimeInterval because it always has either timestamp or timeInterval in addition
@@ -96,21 +97,26 @@ def parseProperty(property):
     if simpleComplexity is "DISCARD" and numExtras is 0:
         return [None, None]
 
-    # Get the raw data, if any.
+    # Get the simple value, if any.
     parsedValue = {
         "data": value.propertyData,
         "raw": value.propertyRawValue,
         "unparsed": value.propertyUnparsedValue,
+        "multi": multiComplexity,
     }.get(simpleComplexity, None)
 
-    # Make it a dictionary if it's complex.
+    # Add extras if there are any.
     if numExtras > 0:
-        parsedValue = {"data": parsedValue} if parsedValue is not None else {}
+        parsedValue = parsedValue if multiComplexity is not None \
+        else {"data": parsedValue} if parsedValue is not None \
+        else {}
+
         parsedValue.update(extraProps)
 
+    complexity = str(multiComplexity.keys()) if multiComplexity is not None else simpleComplexity
     extrasStr = " + " + " + ".join(extraKeys) if numExtras > 0 else ""
     return [
-        (simpleComplexity + extrasStr).replace("DISCARD + ", ""),
+        (complexity + extrasStr).replace("DISCARD + ", ""),
         str(parsedValue)
     ]
 
@@ -118,7 +124,14 @@ def getMultiComplexity(value):
     components = value.propertyComponent
     if len(components) == 0:
         print "WARN: No components"
-    return str(map(lambda x: x.type_, components))
+
+    complexity = {}
+
+    for component in components:
+        # TODO: Parse other data types
+        complexity[component.type_] = component.propertyData
+
+    return complexity
 
 def initParse(parseType, xmlFile, index, totalFiles):
     # Output to stderr so it's visible even when redirecting to file.
