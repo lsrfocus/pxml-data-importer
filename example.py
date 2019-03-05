@@ -154,6 +154,12 @@ def parseObjects(xmlFile, index, totalFiles):
     # Properties just for this file.
     localPropertyTypes = set()
 
+    # get the data sources
+    # print "Data Sources:"
+    # for dataSource in root.graph.dataSourceSet.dataSource:
+    #     name = dataSource.name
+    #     description = dataSource.description
+
     if root.graph.objectSet is not None:
         for object in root.graph.objectSet.object:
             objectType = object.type_.replace("com.palantir.object.", "")
