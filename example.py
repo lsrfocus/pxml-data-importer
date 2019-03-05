@@ -17,7 +17,7 @@ from neo4j import GraphDatabase
 driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "pwd"))
 
 def addObject(tx, objectType, id, props, media):
-    print "Saving " + objectType + " # " + id
+    print >> sys.stderr, "Saving " + objectType + " # " + id
     # print "  props: " + str(props)
     # print "  media: " + str(media)
 
@@ -33,12 +33,12 @@ def addObject(tx, objectType, id, props, media):
     tx.run(statement, id=id, props=props, media=media)
 
 def addLink(tx, parentId, linkType, childId):
-    print "Linking " + parentId + " -[" + linkType + "]-> " + childId
+    print >> sys.stderr, "Linking " + parentId + " -[" + linkType + "]-> " + childId
 
     statement = "MATCH (p {_id: $parentId}), (c {_id: $childId})" \
         " MERGE (p)-[:" + linkType + "]->(c)"
 
-    print "  " + statement
+    # print "  " + statement
     tx.run(statement, parentId=parentId, childId=childId)
 
 # https://stackoverflow.com/a/8230505/763231
