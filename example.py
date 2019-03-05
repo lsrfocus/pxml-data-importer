@@ -19,6 +19,7 @@ NULL_TOKEN = "__NULL__"
 NULL_TOKEN_STRING = "'" + NULL_TOKEN + "'"
 
 ENABLE_EXPORT = False
+ENABLE_WRITE_MEDIA = False
 
 driver = ENABLE_EXPORT and GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "pwd"))
 
@@ -247,9 +248,10 @@ def parseObjects(xmlFile, index, totalFiles):
                     currMedia.append(mediaProps)
 
                     # Write to disk.
-                    mediaFile = open('media/' + filename, 'wb')
-                    mediaFile.write(media.mediaData)
-                    mediaFile.close()
+                    if ENABLE_WRITE_MEDIA:
+                        mediaFile = open('media/' + filename, 'wb')
+                        mediaFile.write(media.mediaData)
+                        mediaFile.close()
 
             # this will just be an easy way to reference a linked object later if we want to
             objects[object.id] = objectType
