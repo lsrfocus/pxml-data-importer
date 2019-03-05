@@ -39,7 +39,7 @@ def addObject(tx, objectType, id, props, media):
 def addLink(tx, parentId, linkType, childId):
     print >> sys.stderr, "Linking " + parentId + " -[" + linkType + "]-> " + childId
 
-    statement = "MATCH (p {_id: $parentId}), (c {_id: $childId})" \
+    statement = "MATCH (p:Object {_id: $parentId}), (c:Object {_id: $childId})" \
         " MERGE (p)-[:" + linkType + "]->(c)"
 
     # print "  " + statement
