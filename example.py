@@ -10,7 +10,7 @@ import pxml
 import glob
 import json
 import sys
-import datetime
+from datetime import datetime
 import pytz
 from neo4j import GraphDatabase
 
@@ -44,7 +44,7 @@ def prettyDump(obj):
     sortedObj = sorted(obj) if (isinstance(obj, set) or isinstance(obj, list)) else obj
     print json.dumps(sortedObj, sort_keys=True, indent=4, cls=SetEncoder)
 
-epoch = datetime.datetime.utcfromtimestamp(0).replace(tzinfo=pytz.utc)
+epoch = datetime.utcfromtimestamp(0).replace(tzinfo=pytz.utc)
 
 # https://stackoverflow.com/a/11111177/763231
 def toEpochMs(dt):
@@ -268,6 +268,8 @@ def parseLinks(xmlFile, index, totalFiles):
 
 ####################################################################################################
 
+startTime = datetime.now()
+
 # Parsing metadata.
 objects = {}
 parseFailures = set()
@@ -305,3 +307,7 @@ prettyDump(parseFailures)
 
 print "\nLink failures (probably exist in a file that wasn't included):"
 prettyDump(linkFailures)
+
+endTime = datetime.now()
+
+print "\nTotal runtime: " + str(endTime - startTime)
