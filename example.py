@@ -10,15 +10,14 @@ import pxml
 import glob
 import json
 import sys
+import datetime
+import pytz
 from neo4j import GraphDatabase
 
 driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "pwd"))
 
 def addObject(tx, objectType, id, props):
     print "Saving " + objectType + " # " + id + " with props: " + str(props)
-
-    # TODO: Handle `None` = `null`
-    # CypherTypeError: Property values can only be of primitive types or arrays thereof
     tx.run("MERGE (o:" + objectType + " {_id: $id}) SET o += $props", id=id, props=props)
 
 # https://stackoverflow.com/a/8230505/763231
@@ -31,6 +30,12 @@ class SetEncoder(json.JSONEncoder):
 def prettyDump(obj):
     sortedObj = sorted(obj) if (isinstance(obj, set) or isinstance(obj, list)) else obj
     print json.dumps(sortedObj, sort_keys=True, indent=4, cls=SetEncoder)
+
+epoch = datetime.datetime.utcfromtimestamp(0).replace(tzinfo=pytz.utc)
+
+# https://stackoverflow.com/a/11111177/763231
+def toEpochMs(dt):
+    return int((dt - epoch).total_seconds() * 1000)
 
 def getSimpleComplexity(value):
     return "data" if value.propertyData is not None \
@@ -45,8 +50,8 @@ def parseProperty(property):
     simpleComplexity = getSimpleComplexity(value)
 
     if simpleComplexity == "interval":
-        # Discard propertyTimeInterval because it always has either timestamp or timeInterval instead.
-        # This is verified by the assertions below.
+        # Discard propertyTimeInterval because it always has either timestamp or timeInterval in addition
+        # (which are more precise). This is verified by the assertions below.
         simpleComplexity = "DISCARD"
 
         if value.propertyTimeInterval.timeStart is not None or value.propertyTimeInterval.timeEnd is not None:
@@ -75,29 +80,38 @@ def parseProperty(property):
 
     # After grepping the whole dataset, these 3 are the only additional attributes used.
     # See pxml.py#property class for all the other possibilities.
-    extraProps = []
+    extraProps = {}
     if property.timestamp is not None:
-        extraProps.append("timestamp")
+        extraProps["timestamp"] = toEpochMs(property.timestamp.timestamp)
     if property.timeInterval is not None:
-        extraProps.append("timeInterval")
+        extraProps["start"] = toEpochMs(property.timeInterval.timeStart)
+        extraProps["end"] = toEpochMs(property.timeInterval.timeEnd)
     if property.gisData is not None:
-        extraProps.append("gisData")
+        extraProps["lat"] = property.gisData.point.latitude
+        extraProps["long"] = property.gisData.point.longitude
 
-    if simpleComplexity is "DISCARD" and len(extraProps) is 0:
+    extraKeys = extraProps.keys()
+    numExtras = len(extraKeys)
+
+    if simpleComplexity is "DISCARD" and numExtras is 0:
         return [None, None]
 
-    # TODO: Handle interval, multiComplexity.
+    # Get the raw data, if any.
     parsedValue = {
         "data": value.propertyData,
         "raw": value.propertyRawValue,
         "unparsed": value.propertyUnparsedValue,
-        "interval": 'None',
-    }.get(simpleComplexity, 'None')
+    }.get(simpleComplexity, None)
 
-    extraPropsStr = " + " + " + ".join(extraProps) if len(extraProps) > 0 else ""
+    # Make it a dictionary if it's complex.
+    if numExtras > 0:
+        parsedValue = {"data": parsedValue} if parsedValue is not None else {}
+        parsedValue.update(extraProps)
+
+    extrasStr = " + " + " + ".join(extraKeys) if numExtras > 0 else ""
     return [
-        (simpleComplexity + extraPropsStr).replace("DISCARD + ", ""),
-        parsedValue
+        (simpleComplexity + extrasStr).replace("DISCARD + ", ""),
+        str(parsedValue)
     ]
 
 def getMultiComplexity(value):
