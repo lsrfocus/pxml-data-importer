@@ -18,7 +18,9 @@ from neo4j import GraphDatabase
 NULL_TOKEN = "__NULL__"
 NULL_TOKEN_STRING = "'" + NULL_TOKEN + "'"
 
-driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "pwd"))
+ENABLE_EXPORT = False
+
+driver = ENABLE_EXPORT and GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "pwd"))
 
 def addObject(tx, objectType, id, props, media):
     print >> sys.stderr, "Saving " + objectType + " # " + id
@@ -34,7 +36,7 @@ def addObject(tx, objectType, id, props, media):
         " MERGE (o)-[:HAS_MEDIA]->(m)"
 
     # print "  " + statement
-    tx.run(statement, id=id, props=props, media=media)
+    ENABLE_EXPORT and tx.run(statement, id=id, props=props, media=media)
 
 def addLink(tx, parentId, linkType, childId):
     print >> sys.stderr, "Linking " + parentId + " -[" + linkType + "]-> " + childId
@@ -43,7 +45,7 @@ def addLink(tx, parentId, linkType, childId):
         " MERGE (p)-[:" + linkType + "]->(c)"
 
     # print "  " + statement
-    tx.run(statement, parentId=parentId, childId=childId)
+    ENABLE_EXPORT and tx.run(statement, parentId=parentId, childId=childId)
 
 # https://stackoverflow.com/a/8230505/763231
 class SetEncoder(json.JSONEncoder):
@@ -252,8 +254,9 @@ def parseObjects(xmlFile, index, totalFiles):
             # this will just be an easy way to reference a linked object later if we want to
             objects[object.id] = objectType
 
-            with driver.session() as session:
-                session.write_transaction(addObject, objectType, object.id, currProps, currMedia)
+            if ENABLE_EXPORT:
+                with driver.session() as session:
+                    session.write_transaction(addObject, objectType, object.id, currProps, currMedia)
 
 def parseLinks(xmlFile, index, totalFiles):
     initParse("link", xmlFile, index, totalFiles)
@@ -279,8 +282,9 @@ def parseLinks(xmlFile, index, totalFiles):
             linkString = parentType + " -[" + linkType + "]-> " + childType
             linkTypes.add(linkString)
 
-            with driver.session() as session:
-                session.write_transaction(addLink, link.parentRef, linkType, link.childRef)
+            if ENABLE_EXPORT:
+                with driver.session() as session:
+                    session.write_transaction(addLink, link.parentRef, linkType, link.childRef)
 
 ####################################################################################################
 
