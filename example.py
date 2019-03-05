@@ -32,18 +32,6 @@ def prettyDump(obj):
     sortedObj = sorted(obj) if (isinstance(obj, set) or isinstance(obj, list)) else obj
     print json.dumps(sortedObj, sort_keys=True, indent=4, cls=SetEncoder)
 
-def getPropertyValue(property):
-    value = property.propertyValue
-    simpleComplexity = getSimpleComplexity(value)
-
-    # TODO: Handle interval, multiComplexity.
-    return {
-        "data": value.propertyData,
-        "raw": value.propertyRawValue,
-        "unparsed": value.propertyUnparsedValue,
-        "interval": 'None',
-    }.get(simpleComplexity, 'None')
-
 def getSimpleComplexity(value):
     return "data" if value.propertyData is not None \
         else "raw" if value.propertyRawValue is not None \
@@ -52,7 +40,7 @@ def getSimpleComplexity(value):
         else getMultiComplexity(value) if value.propertyComponent is not None \
         else "unknown"
 
-def getComplexity(property):
+def parseProperty(property):
     value = property.propertyValue
     simpleComplexity = getSimpleComplexity(value)
 
@@ -96,10 +84,21 @@ def getComplexity(property):
         extraProps.append("gisData")
 
     if simpleComplexity is "DISCARD" and len(extraProps) is 0:
-        return None
+        return [None, None]
+
+    # TODO: Handle interval, multiComplexity.
+    parsedValue = {
+        "data": value.propertyData,
+        "raw": value.propertyRawValue,
+        "unparsed": value.propertyUnparsedValue,
+        "interval": 'None',
+    }.get(simpleComplexity, 'None')
 
     extraPropsStr = " + " + " + ".join(extraProps) if len(extraProps) > 0 else ""
-    return (simpleComplexity + extraPropsStr).replace("DISCARD + ", "")
+    return [
+        (simpleComplexity + extraPropsStr).replace("DISCARD + ", ""),
+        parsedValue
+    ]
 
 def getMultiComplexity(value):
     components = value.propertyComponent
@@ -148,7 +147,7 @@ def parseObjects(xmlFile, index, totalFiles):
                         # Designate that this property type has multiple instances per object.
                         hasMulti = True
 
-                    complexity = getComplexity(property)
+                    [complexity, value] = parseProperty(property)
                     if complexity is None:
                         continue;
 
@@ -157,7 +156,7 @@ def parseObjects(xmlFile, index, totalFiles):
                     if propertyType not in currProps:
                         currProps[propertyType] = []
 
-                    currProps[propertyType].append(getPropertyValue(property))
+                    currProps[propertyType].append(value)
 
                     propertyStringSingle = propertyType + " (" + complexity + ")"
                     propertyStringMulti = propertyType + "* (" + complexity + ")"
