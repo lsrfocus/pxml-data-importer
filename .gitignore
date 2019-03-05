@@ -1,6 +1,7 @@
 baseRealmDump.zip
 baseRealmDump/
 media/
+.neo4j/
 
 *.pyc
 summary*.txt

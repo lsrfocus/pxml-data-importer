@@ -1,0 +1,19 @@
+# Usage:
+# docker-compose -f db.yml up -d palantir-import
+#
+version: '2'
+services:
+  palantir-import:
+    image: neo4j:3.5.3
+    ports:
+      - 7474:7474
+      - 7687:7687
+    volumes:
+      - ./.neo4j/plugins:/plugins
+      - ./.neo4j/conf:/conf
+      - ./.neo4j/import:/import
+      - ./.neo4j/data:/data
+      - ./.neo4j/logs:/logs
+      - ./.neo4j/metrics:/metrics
+    environment:
+      - EXTENSION_SCRIPT=/data/setup-neo4j.sh
