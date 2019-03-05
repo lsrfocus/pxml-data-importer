@@ -18,9 +18,20 @@ driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "pwd"))
 
 def addObject(tx, objectType, id, props, media):
     print "Saving " + objectType + " # " + id
-    print "  props: " + str(props)
-    print "  media: " + str(media)
-    tx.run("MERGE (o:" + objectType + " {_id: $id}) SET o += $props", id=id, props=props)
+    # print "  props: " + str(props)
+    # print "  media: " + str(media)
+
+    statement = "MERGE (o:" + objectType + " {_id: $id})" \
+        " SET o += $props" \
+        " WITH o" \
+        " UNWIND $media AS media" \
+        " MERGE (m:Media {_id: media._id})" \
+        " SET m += media" \
+        " MERGE (o)-[:HAS_MEDIA]->(m)" \
+        ""
+
+    # print "  " + statement
+    tx.run(statement, id=id, props=props, media=media)
 
 # https://stackoverflow.com/a/8230505/763231
 class SetEncoder(json.JSONEncoder):
