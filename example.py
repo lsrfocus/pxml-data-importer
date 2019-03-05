@@ -160,73 +160,82 @@ def parseObjects(xmlFile, index, totalFiles):
     #     name = dataSource.name
     #     description = dataSource.description
 
-    if root.graph.objectSet is not None:
-        for object in root.graph.objectSet.object:
-            objectType = object.type_.replace("com.palantir.object.", "")
-            # print "\t%s" % objectType
+    # Nothing inherently wrong with this case, just want to verify.
+    if root.graph.objectSet is None:
+        print "WARN: No objects found in file"
+        exit()
 
-            currProps = {}
+    # Nothing inherently wrong with this case, just want to verify.
+    if len(root.graph.objectSet.object) is not 1:
+        print "WARN: Unexpected number of objects in file"
+        exit()
 
-            if objectType == "abstract":
-                continue
+    for object in root.graph.objectSet.object:
+        objectType = object.type_.replace("com.palantir.object.", "")
+        # print "\t%s" % objectType
 
-            if objectType not in objectTypes:
-                objectTypes[objectType] = set()
+        currProps = {}
 
-            if object.propertySet is not None:
-                # print "\tProperties..."
-                for property in object.propertySet.property:
-                    propertyType = property.type_.replace("com.palantir.property.", "")
-                    propertyTypeStr = propertyType
-                    hasMulti = False
-                    # print "\t\t%s: %s" % (property.type_, property.propertyValue.propertyData)
+        if objectType == "abstract":
+            continue
 
-                    if propertyType in localPropertyTypes:
-                        # Designate that this property type has multiple instances per object.
-                        hasMulti = True
+        if objectType not in objectTypes:
+            objectTypes[objectType] = set()
 
-                    [complexity, value] = parseProperty(property)
-                    if complexity is None:
-                        continue;
+        if object.propertySet is not None:
+            # print "\tProperties..."
+            for property in object.propertySet.property:
+                propertyType = property.type_.replace("com.palantir.property.", "")
+                propertyTypeStr = propertyType
+                hasMulti = False
+                # print "\t\t%s: %s" % (property.type_, property.propertyValue.propertyData)
 
-                    localPropertyTypes.add(propertyType)
+                if propertyType in localPropertyTypes:
+                    # Designate that this property type has multiple instances per object.
+                    hasMulti = True
 
-                    if propertyType not in currProps:
-                        currProps[propertyType] = []
+                [complexity, value] = parseProperty(property)
+                if complexity is None:
+                    continue;
 
-                    currProps[propertyType].append(value)
+                localPropertyTypes.add(propertyType)
 
-                    propertyStringSingle = propertyType + " (" + complexity + ")"
-                    propertyStringMulti = propertyType + "* (" + complexity + ")"
+                if propertyType not in currProps:
+                    currProps[propertyType] = []
 
-                    # Make sure there's exactly one type.
-                    if hasMulti:
-                        objectTypes[objectType].add(propertyStringMulti)
-                        if propertyStringSingle in objectTypes[objectType]:
-                            objectTypes[objectType].remove(propertyStringSingle)
-                    elif propertyStringMulti not in objectTypes[objectType]:
-                        objectTypes[objectType].add(propertyStringSingle)
+                currProps[propertyType].append(value)
 
-            # Create a media/ folder in the same directory as this script if you want to capture attachments
-            # if object.mediaSet is not None:
-            #     for media in object.mediaSet.media:
-            #         try:
-            #             title = media.mediaTitle.encode("utf-8")
-            #         except:
-            #             # Possible encoding issue with arabic (according to original author).
-            #             title = media.id
+                propertyStringSingle = propertyType + " (" + complexity + ")"
+                propertyStringMulti = propertyType + "* (" + complexity + ")"
 
-            #         data = media.mediaData
+                # Make sure there's exactly one type.
+                if hasMulti:
+                    objectTypes[objectType].add(propertyStringMulti)
+                    if propertyStringSingle in objectTypes[objectType]:
+                        objectTypes[objectType].remove(propertyStringSingle)
+                elif propertyStringMulti not in objectTypes[objectType]:
+                    objectTypes[objectType].add(propertyStringSingle)
 
-            #         mediaFile = open('media/' + title, 'wb')
-            #         mediaFile.write(data)
-            #         mediaFile.close()
+        # Create a media/ folder in the same directory as this script if you want to capture attachments
+        # if object.mediaSet is not None:
+        #     for media in object.mediaSet.media:
+        #         try:
+        #             title = media.mediaTitle.encode("utf-8")
+        #         except:
+        #             # Possible encoding issue with arabic (according to original author).
+        #             title = media.id
 
-            # this will just be an easy way to reference a linked object later if we want to
-            objects[object.id] = objectType
+        #         data = media.mediaData
 
-            with driver.session() as session:
-                session.write_transaction(addObject, objectType, object.id, currProps)
+        #         mediaFile = open('media/' + title, 'wb')
+        #         mediaFile.write(data)
+        #         mediaFile.close()
+
+        # this will just be an easy way to reference a linked object later if we want to
+        objects[object.id] = objectType
+
+        with driver.session() as session:
+            session.write_transaction(addObject, objectType, object.id, currProps)
 
 def parseLinks(xmlFile, index, totalFiles):
     initParse("link", xmlFile, index, totalFiles)
