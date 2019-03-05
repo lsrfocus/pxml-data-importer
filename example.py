@@ -16,8 +16,10 @@ from neo4j import GraphDatabase
 
 driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "pwd"))
 
-def addObject(tx, objectType, id, props):
-    print "Saving " + objectType + " # " + id + " with props: " + str(props)
+def addObject(tx, objectType, id, props, media):
+    print "Saving " + objectType + " # " + id
+    print "  props: " + str(props)
+    print "  media: " + str(media)
     tx.run("MERGE (o:" + objectType + " {_id: $id}) SET o += $props", id=id, props=props)
 
 # https://stackoverflow.com/a/8230505/763231
@@ -166,6 +168,7 @@ def parseObjects(xmlFile, index, totalFiles):
             # print "\t%s" % objectType
 
             currProps = {}
+            currMedia = []
 
             if objectType == "abstract":
                 continue
@@ -207,26 +210,27 @@ def parseObjects(xmlFile, index, totalFiles):
                     elif propertyStringMulti not in objectTypes[objectType]:
                         objectTypes[objectType].add(propertyStringSingle)
 
-            # Create a media/ folder in the same directory as this script if you want to capture attachments
-            # if object.mediaSet is not None:
-            #     for media in object.mediaSet.media:
-            #         try:
-            #             title = media.mediaTitle.encode("utf-8")
-            #         except:
-            #             # Possible encoding issue with arabic (according to original author).
-            #             title = media.id
+            if object.mediaSet is not None:
+                for media in object.mediaSet.media:
+                    title = media.mediaTitle.encode("utf-8")
+                    mediaProps = {
+                        "_id": media.id,
+                        "filename": title,
+                        "linkType": media.linkType.replace("com.palantir.link.", ""),
+                        "mimeType": media.mimeType,
+                    }
+                    currMedia.append(mediaProps)
 
-            #         data = media.mediaData
-
-            #         mediaFile = open('media/' + title, 'wb')
-            #         mediaFile.write(data)
-            #         mediaFile.close()
+                    # Write to disk.
+                    mediaFile = open('media/' + title, 'wb')
+                    mediaFile.write(media.mediaData)
+                    mediaFile.close()
 
             # this will just be an easy way to reference a linked object later if we want to
             objects[object.id] = objectType
 
             with driver.session() as session:
-                session.write_transaction(addObject, objectType, object.id, currProps)
+                session.write_transaction(addObject, objectType, object.id, currProps, currMedia)
 
 def parseLinks(xmlFile, index, totalFiles):
     initParse("link", xmlFile, index, totalFiles)
