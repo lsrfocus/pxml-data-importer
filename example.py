@@ -27,11 +27,19 @@ def addObject(tx, objectType, id, props, media):
         " UNWIND $media AS media" \
         " MERGE (m:Media {_id: media._id})" \
         " SET m += media" \
-        " MERGE (o)-[:HAS_MEDIA]->(m)" \
-        ""
+        " MERGE (o)-[:HAS_MEDIA]->(m)"
 
     # print "  " + statement
     tx.run(statement, id=id, props=props, media=media)
+
+def addLink(tx, parentId, linkType, childId):
+    print "Linking " + parentId + " -[" + linkType + "]-> " + childId
+
+    statement = "MATCH (p {_id: $parentId}), (c {_id: $childId})" \
+        " MERGE (p)-[:" + linkType + "]->(c)"
+
+    print "  " + statement
+    tx.run(statement, parentId=parentId, childId=childId)
 
 # https://stackoverflow.com/a/8230505/763231
 class SetEncoder(json.JSONEncoder):
@@ -263,8 +271,12 @@ def parseLinks(xmlFile, index, totalFiles):
                 linkFailures.add(xmlFile)
                 continue
 
-            linkType = parentType + " -[" + link.type_.replace("com.palantir.link.", "") + "]-> " + childType
-            linkTypes.add(linkType)
+            linkType = link.type_.replace("com.palantir.link.", "").replace("Simple", "RelatedTo")
+            linkString = parentType + " -[" + linkType + "]-> " + childType
+            linkTypes.add(linkString)
+
+            with driver.session() as session:
+                session.write_transaction(addLink, link.parentRef, linkType, link.childRef)
 
 ####################################################################################################
 
