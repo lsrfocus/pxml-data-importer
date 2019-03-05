@@ -21,7 +21,7 @@ def addObject(tx, objectType, id, props, media):
     # print "  props: " + str(props)
     # print "  media: " + str(media)
 
-    statement = "MERGE (o:" + objectType + " {_id: $id})" \
+    statement = "MERGE (o:Object:" + objectType + " {_id: $id})" \
         " SET o += $props" \
         " WITH o" \
         " UNWIND $media AS media" \
