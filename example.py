@@ -122,13 +122,19 @@ def parseProperty(property):
 
 def getMultiComplexity(value):
     components = value.propertyComponent
+
     if len(components) == 0:
         print "WARN: No components"
+        exit()
 
     complexity = {}
 
     for component in components:
-        # TODO: Parse other data types
+        if component.propertyData is None:
+            # Make sure we don't need to parse any other data types.
+            print "WARN: No propertyData for multi-part property"
+            exit()
+
         complexity[component.type_] = component.propertyData
 
     return complexity
