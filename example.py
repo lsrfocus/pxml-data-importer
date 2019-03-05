@@ -98,18 +98,17 @@ def parseProperty(property):
         return [None, None]
 
     # Get the simple value, if any.
-    parsedValue = {
-        "data": value.propertyData,
-        "raw": value.propertyRawValue,
-        "unparsed": value.propertyUnparsedValue,
-        "multi": multiComplexity,
-    }.get(simpleComplexity, None)
+    parsedValue = value.propertyData.encode("utf-8") if simpleComplexity is "data" \
+        else value.propertyRawValue.valueOf_.encode("utf-8") if simpleComplexity is "raw" \
+        else value.propertyUnparsedValue.valueOf_.encode("utf-8") if simpleComplexity is "unparsed" \
+        else multiComplexity if simpleComplexity is "multi" \
+        else None
 
     # Add extras if there are any.
     if numExtras > 0:
         parsedValue = parsedValue if multiComplexity is not None \
-        else {"data": parsedValue} if parsedValue is not None \
-        else {}
+            else {"data": parsedValue} if parsedValue is not None \
+            else {}
 
         parsedValue.update(extraProps)
 
@@ -135,7 +134,7 @@ def getMultiComplexity(value):
             print "WARN: No propertyData for multi-part property"
             exit()
 
-        complexity[component.type_] = component.propertyData
+        complexity[component.type_] = component.propertyData.encode("utf-8")
 
     return complexity
 
