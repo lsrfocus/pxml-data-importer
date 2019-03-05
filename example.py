@@ -14,6 +14,10 @@ from datetime import datetime
 import pytz
 from neo4j import GraphDatabase
 
+# For string replacement, None => null.
+NULL_TOKEN = "__NULL__"
+NULL_TOKEN_STRING = "'" + NULL_TOKEN + "'"
+
 driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "pwd"))
 
 def addObject(tx, objectType, id, props, media):
@@ -56,7 +60,7 @@ epoch = datetime.utcfromtimestamp(0).replace(tzinfo=pytz.utc)
 
 # https://stackoverflow.com/a/11111177/763231
 def toEpochMs(dt):
-    return int((dt - epoch).total_seconds() * 1000)
+    return int((dt - epoch).total_seconds() * 1000) if dt is not None else None
 
 def getSimpleComplexity(value):
     return "data" if value.propertyData is not None \
@@ -104,13 +108,13 @@ def parseProperty(property):
     # See pxml.py#property class for all the other possibilities.
     extraProps = {}
     if property.timestamp is not None:
-        extraProps["timestamp"] = toEpochMs(property.timestamp.timestamp)
+        extraProps["timestamp"] = toEpochMs(property.timestamp.timestamp) or NULL_TOKEN
     if property.timeInterval is not None:
-        extraProps["start"] = toEpochMs(property.timeInterval.timeStart)
-        extraProps["end"] = toEpochMs(property.timeInterval.timeEnd)
+        extraProps["start"] = toEpochMs(property.timeInterval.timeStart) or NULL_TOKEN
+        extraProps["end"] = toEpochMs(property.timeInterval.timeEnd) or NULL_TOKEN
     if property.gisData is not None:
-        extraProps["lat"] = property.gisData.point.latitude
-        extraProps["long"] = property.gisData.point.longitude
+        extraProps["lat"] = property.gisData.point.latitude or NULL_TOKEN
+        extraProps["long"] = property.gisData.point.longitude or NULL_TOKEN
 
     extraKeys = extraProps.keys()
     numExtras = len(extraKeys)
@@ -137,7 +141,7 @@ def parseProperty(property):
     extrasStr = " + " + " + ".join(extraKeys) if numExtras > 0 else ""
     return [
         (complexity + extrasStr).replace("DISCARD + ", ""),
-        str(parsedValue)
+        str(parsedValue).replace(NULL_TOKEN_STRING, "null")
     ]
 
 def getMultiComplexity(value):
