@@ -235,17 +235,17 @@ def parseObjects(xmlFile, index, totalFiles):
 
             if object.mediaSet is not None:
                 for media in object.mediaSet.media:
-                    title = media.mediaTitle.encode("utf-8")
+                    filename = media.mediaTitle.encode("utf-8") if media.mediaTitle is not None else media.id
                     mediaProps = {
                         "_id": media.id,
-                        "filename": title,
+                        "filename": filename,
                         "linkType": media.linkType.replace("com.palantir.link.", ""),
                         "mimeType": media.mimeType,
                     }
                     currMedia.append(mediaProps)
 
                     # Write to disk.
-                    mediaFile = open('media/' + title, 'wb')
+                    mediaFile = open('media/' + filename, 'wb')
                     mediaFile.write(media.mediaData)
                     mediaFile.close()
 
