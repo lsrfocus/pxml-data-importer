@@ -116,8 +116,8 @@ def parseProperty(property):
         extraProps["start"] = toEpochMs(property.timeInterval.timeStart) or NULL_TOKEN
         extraProps["end"] = toEpochMs(property.timeInterval.timeEnd) or NULL_TOKEN
     if property.gisData is not None:
-        extraProps["lat"] = property.gisData.point.latitude or NULL_TOKEN
-        extraProps["long"] = property.gisData.point.longitude or NULL_TOKEN
+        extraProps["latitude"] = property.gisData.point.latitude or NULL_TOKEN
+        extraProps["longitude"] = property.gisData.point.longitude or NULL_TOKEN
 
     extraKeys = extraProps.keys()
     numExtras = len(extraKeys)
